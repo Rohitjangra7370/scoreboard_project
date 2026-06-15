@@ -1,4 +1,5 @@
 firmware/tests/run
+firmware/tests/run_reaction
 *.o
 *.elf
 *.bin
