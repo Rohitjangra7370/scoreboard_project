@@ -118,14 +118,15 @@ static void test_reset() {
   CHECK_EQ(s.scoreA, 11);
 }
 
-static void test_menu_next() {
-  int cursor = 0;
-  CHECK_EQ(menu_next(&cursor), TENNIS);      // 0 -> 1
-  CHECK_EQ(menu_next(&cursor), BADMINTON);   // 1 -> 2
-  CHECK_EQ(menu_next(&cursor), FREE_COUNT);  // 2 -> 3
-  // wrap: from last game back to TABLE_TENNIS (index 0)
-  cursor = GAME_COUNT - 1;
-  CHECK_EQ(menu_next(&cursor), TABLE_TENNIS); // GAME_COUNT-1 -> 0
+static void test_menu() {
+  // NUM_MENU = GAME_COUNT (8) + 1 reaction entry = 9
+  CHECK_EQ(NUM_MENU, GAME_COUNT + 1);
+  CHECK_EQ(menu_advance(0), 1);
+  CHECK_EQ(menu_advance(GAME_COUNT), 0);             // reaction entry wraps to 0
+  CHECK_EQ(menu_advance(NUM_MENU - 1), 0);
+  CHECK_STR(menu_name(TABLE_TENNIS), "Table Tennis");
+  CHECK_STR(menu_name(CORNHOLE), "Cornhole");
+  CHECK_STR(menu_name(REACTION_ITEM), "Reaction");
 }
 
 // helper: alternate to (target-1, target-1) then have A score `extra` times
@@ -173,7 +174,7 @@ int main() {
   test_tennis();
   test_undo();
   test_reset();
-  test_menu_next();
+  test_menu();
   test_new_sports();
   if (g_failures == 0) printf("ALL TESTS PASSED\n");
   return g_failures ? 1 : 0;

@@ -101,7 +101,9 @@ void format_score(const ScoreState* s, Game g, bool playerA, char* out, size_t n
 
 const char* game_name(Game g) { return GAMES[g].name; }
 
-Game menu_next(int* cursor) {
-  *cursor = (*cursor + 1) % GAME_COUNT;
-  return (Game)(*cursor);
+int menu_advance(int cursor) { return (cursor + 1) % NUM_MENU; }
+
+const char* menu_name(int idx) {
+  if (idx == REACTION_ITEM) return "Reaction";
+  return GAMES[idx].name;
 }

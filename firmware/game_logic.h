@@ -4,7 +4,7 @@
 
 enum Game { TABLE_TENNIS, TENNIS, BADMINTON, FREE_COUNT,
             PICKLEBALL, VOLLEYBALL, BASKETBALL_21, CORNHOLE, GAME_COUNT };
-enum Mode { PLAYING, MENU };
+enum Mode { PLAYING, MENU, REACTION };
 
 #define UNDO_DEPTH 20
 
@@ -30,6 +30,9 @@ struct GameRules {
   int         hardCap;    // 0 = no cap
 };
 
+#define REACTION_ITEM (GAME_COUNT)     // menu index of the reaction game
+#define NUM_MENU      (GAME_COUNT + 1) // scoring games + reaction
+
 extern const GameRules GAMES[GAME_COUNT];
 
 void state_reset(ScoreState* s);
@@ -39,4 +42,5 @@ bool undo(ScoreState* s, History* h);          // false if nothing to undo
 void reset_match(ScoreState* s, History* h);   // pushes snapshot, zeroes scores+games
 void format_score(const ScoreState* s, Game g, bool playerA, char* out, size_t n);
 const char* game_name(Game g);
-Game menu_next(int* cursor);                    // advance + wrap, returns new game
+int         menu_advance(int cursor);  // (cursor + 1) % NUM_MENU
+const char* menu_name(int idx);        // game name, or "Reaction" for REACTION_ITEM
