@@ -6,23 +6,30 @@
  *  - 4x 2.4" ILI9341 TFT displays on a shared VSPI bus (separate CS each):
  *        [A initials][A score]  ||LED column||  [B score][B initials]
  *  - 1x WS2812B 8-LED stick      -> games-won tracker (centre column)
- *  - 2x arcade buttons (red/green, hardware-debounced interrupts) -> +1 score
- *  - Scores + games-won persist in NVS flash (survive power-off / dead battery)
+ *  - 2x arcade buttons (red/green, hardware-debounced interrupts)
+ *  - Scores + games-won + selected game persist in NVS flash (survive power-off)
  *
- * Libraries (install via Library Manager):
- *   - Adafruit GFX Library
- *   - Adafruit ILI9341
- *   - Adafruit NeoPixel
+ * Controls (gesture-based, only two buttons):
+ *   Red short    = +1 Player A          Green short = +1 Player B
+ *   Red long     = UNDO one step        Green long  = RESET match
+ *   Hold both 2s = open / close the game MENU
+ *   In MENU: Red = next game (preview), Green = select (resets scores)
  *
+ * Scoring rules live in the hardware-independent core (game_logic.h/.cpp),
+ * unit-tested on the host.
+ *
+ * Libraries: Adafruit GFX, Adafruit ILI9341, Adafruit NeoPixel.
  * Author: Rohit Jangra
  * ----------------------------------------------------------------------------
  */
 
 #include <SPI.h>
+#include <string.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 #include <Adafruit_NeoPixel.h>
 #include <Preferences.h>
+#include "game_logic.h"
 
 // ----------------------------------------------------------------------------
 // Pin map  (see wiring_table.md)
@@ -37,20 +44,18 @@
 #define CS_B_SCORE   14      // display 3 - Player B score
 #define CS_B_INIT     4      // display 4 - Player B initials
 
-#define BTN_RED      32      // Player A +1   (INPUT_PULLUP -> GND)
-#define BTN_GREEN    33      // Player B +1   (INPUT_PULLUP -> GND)
+#define BTN_RED      32      // Player A   (INPUT_PULLUP -> GND)
+#define BTN_GREEN    33      // Player B   (INPUT_PULLUP -> GND)
 
 #define NEOPIXEL_PIN 25      // WS2812B DIN
 #define NUM_LEDS      8      // 8-LED stick
 
 // ----------------------------------------------------------------------------
-// Game configuration
+// Timing
 // ----------------------------------------------------------------------------
-#define WIN_SCORE        11   // first to this score wins the round
-#define WIN_BY_TWO       true // must win by 2 (table-tennis style)
-#define MAX_GAMES        4    // games shown per player on the LED stick (4+4)
-#define DEBOUNCE_MS      40   // button debounce window
-#define RESET_HOLD_MS    2000 // hold BOTH buttons this long to reset match
+#define DEBOUNCE_MS    40    // button debounce window
+#define LONG_PRESS_MS  600   // >= this on release = long press
+#define MENU_HOLD_MS   2000  // hold BOTH this long to toggle the menu
 
 const char* INITIALS_A = "P1";   // red player
 const char* INITIALS_B = "P2";   // green player
@@ -76,130 +81,143 @@ Adafruit_ILI9341 tftBInit  = Adafruit_ILI9341(CS_B_INIT,  TFT_DC, -1);
 Adafruit_NeoPixel strip(NUM_LEDS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 Preferences prefs;
 
-// Game state
-volatile uint32_t lastRedIsr   = 0;
-volatile uint32_t lastGreenIsr = 0;
-volatile bool     redPressed   = false;
-volatile bool     greenPressed = false;
+// Game state (logic lives in the core)
+ScoreState gState;
+History    gHist;
+Mode       gMode = PLAYING;
+Game       gGame = TABLE_TENNIS;
+int        gCursor = 0;
 
-int scoreA = 0, scoreB = 0;   // current round
-int gamesA = 0, gamesB = 0;   // games (rounds) won
-int prevScoreA = -1, prevScoreB = -1;   // for redraw-on-change
+// redraw caches (avoid flicker)
+char prevAText[8] = "", prevBText[8] = "";
+bool prevMenu = false;
+int  prevCursor = -1;
 
-uint32_t bothHeldSince = 0;   // for reset detection
+// button edge capture
+volatile uint32_t redDownAt = 0, greenDownAt = 0;
+volatile bool redEdgeDown = false, greenEdgeDown = false;
 
 // ----------------------------------------------------------------------------
-// Interrupt service routines (debounced flag-setters; logic runs in loop)
+// Interrupt service routines (capture press time; logic resolves on release)
 // ----------------------------------------------------------------------------
 void IRAM_ATTR isrRed() {
   uint32_t now = millis();
-  if (now - lastRedIsr > DEBOUNCE_MS) { redPressed = true; lastRedIsr = now; }
+  if (now - redDownAt > DEBOUNCE_MS) { redDownAt = now; redEdgeDown = true; }
 }
 void IRAM_ATTR isrGreen() {
   uint32_t now = millis();
-  if (now - lastGreenIsr > DEBOUNCE_MS) { greenPressed = true; lastGreenIsr = now; }
+  if (now - greenDownAt > DEBOUNCE_MS) { greenDownAt = now; greenEdgeDown = true; }
 }
 
 // ----------------------------------------------------------------------------
 // Persistence
 // ----------------------------------------------------------------------------
 void saveState() {
-  prefs.putInt("scoreA", scoreA);
-  prefs.putInt("scoreB", scoreB);
-  prefs.putInt("gamesA", gamesA);
-  prefs.putInt("gamesB", gamesB);
+  prefs.putInt("scoreA", gState.scoreA);
+  prefs.putInt("scoreB", gState.scoreB);
+  prefs.putInt("gamesA", gState.gamesA);
+  prefs.putInt("gamesB", gState.gamesB);
+  prefs.putUChar("tA", gState.tA);
+  prefs.putUChar("tB", gState.tB);
+  prefs.putUChar("game", (uint8_t)gGame);
 }
 
 void loadState() {
-  scoreA = prefs.getInt("scoreA", 0);
-  scoreB = prefs.getInt("scoreB", 0);
-  gamesA = prefs.getInt("gamesA", 0);
-  gamesB = prefs.getInt("gamesB", 0);
+  gState.scoreA = prefs.getInt("scoreA", 0);
+  gState.scoreB = prefs.getInt("scoreB", 0);
+  gState.gamesA = prefs.getInt("gamesA", 0);
+  gState.gamesB = prefs.getInt("gamesB", 0);
+  gState.tA = prefs.getUChar("tA", 0);
+  gState.tB = prefs.getUChar("tB", 0);
+  gGame = (Game)prefs.getUChar("game", (uint8_t)TABLE_TENNIS);
+  gCursor = (int)gGame;
 }
 
 // ----------------------------------------------------------------------------
 // Display helpers
 // ----------------------------------------------------------------------------
-// Draw a player's initials on its display (called once / on reset).
+// Draw a player's initials on its display.
 void drawInitials(Adafruit_ILI9341 &tft, const char* text, uint16_t colour) {
   tft.fillScreen(COL_BLACK);
   tft.setTextColor(colour);
   tft.setTextSize(6);
-  // rough centre for a 240x320 panel in landscape (320x240)
   int16_t x1, y1; uint16_t w, h;
   tft.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
   tft.setCursor((320 - w) / 2, (240 - h) / 2);
   tft.print(text);
 }
 
-// Draw a big centred score number.
-void drawScore(Adafruit_ILI9341 &tft, int value, uint16_t colour) {
+// Draw centred text at a given size on one panel (landscape 320x240).
+void drawBig(Adafruit_ILI9341 &tft, const char* text, uint16_t colour, uint8_t size) {
   tft.fillScreen(COL_BLACK);
   tft.setTextColor(colour);
-  tft.setTextSize(12);
-  char buf[6];
-  snprintf(buf, sizeof(buf), "%d", value);
+  tft.setTextSize(size);
   int16_t x1, y1; uint16_t w, h;
-  tft.getTextBounds(buf, 0, 0, &x1, &y1, &w, &h);
+  tft.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
   tft.setCursor((320 - w) / 2, (240 - h) / 2);
-  tft.print(buf);
+  tft.print(text);
 }
 
-// Light the NeoPixel stick: LEDs 0..3 = Player A games (red),
-// LEDs 4..7 = Player B games (green).
-void updateLeds() {
+// LEDs 0..3 = Player A games (red), 7..4 = Player B games (green).
+void renderLeds() {
   strip.clear();
-  for (int i = 0; i < gamesA && i < MAX_GAMES; i++)
+  for (int i = 0; i < gState.gamesA && i < 4; i++)
     strip.setPixelColor(i, strip.Color(60, 0, 0));
-  for (int i = 0; i < gamesB && i < MAX_GAMES; i++)
+  for (int i = 0; i < gState.gamesB && i < 4; i++)
     strip.setPixelColor(NUM_LEDS - 1 - i, strip.Color(0, 60, 0));
   strip.show();
 }
 
-void refreshScores() {
-  if (scoreA != prevScoreA) { drawScore(tftAScore, scoreA, COL_RED);   prevScoreA = scoreA; }
-  if (scoreB != prevScoreB) { drawScore(tftBScore, scoreB, COL_GREEN); prevScoreB = scoreB; }
+void render() {
+  if (gMode == MENU) {
+    int nextCursor = (gCursor + 1) % GAME_COUNT;
+    if (!prevMenu || prevCursor != gCursor) {
+      drawBig(tftAInit,  "MENU", COL_WHITE, 4);
+      drawBig(tftAScore, game_name((Game)gCursor),    COL_GREEN, 2);
+      drawBig(tftBScore, game_name((Game)nextCursor), COL_WHITE, 2);
+      drawBig(tftBInit,  "R:next G:ok", COL_WHITE, 2);
+      prevMenu = true; prevCursor = gCursor;
+    }
+    return;
+  }
+
+  // PLAYING
+  if (prevMenu) {                       // just left the menu -> redraw initials
+    drawInitials(tftAInit, INITIALS_A, COL_RED);
+    drawInitials(tftBInit, INITIALS_B, COL_GREEN);
+    prevAText[0] = prevBText[0] = '\0';
+    prevMenu = false; prevCursor = -1;
+  }
+  char a[8], b[8];
+  format_score(&gState, gGame, true,  a, sizeof(a));
+  format_score(&gState, gGame, false, b, sizeof(b));
+  if (strcmp(a, prevAText)) { drawBig(tftAScore, a, COL_RED,   10); strcpy(prevAText, a); }
+  if (strcmp(b, prevBText)) { drawBig(tftBScore, b, COL_GREEN, 10); strcpy(prevBText, b); }
+  renderLeds();
 }
 
 // ----------------------------------------------------------------------------
-// Game logic
+// Input handling
 // ----------------------------------------------------------------------------
-bool isRoundWon(int me, int them) {
-  if (me < WIN_SCORE) return false;
-  if (WIN_BY_TWO) return (me - them) >= 2;
-  return true;
-}
+// Resolve a button on release: long vs short, routed by mode.
+void handleRelease(int pin, volatile bool* edge, uint32_t downAt, bool isRed) {
+  if (!*edge) return;
+  if (digitalRead(pin) == LOW) return;     // still held; wait for release
+  *edge = false;
+  bool isLong = (millis() - downAt) >= LONG_PRESS_MS;
 
-void winFlash(uint16_t colour) {
-  for (int k = 0; k < 3; k++) {
-    strip.fill(strip.Color((colour == COL_RED) ? 80 : 0,
-                            (colour == COL_GREEN) ? 80 : 0, 0));
-    strip.show(); delay(120);
-    strip.clear(); strip.show(); delay(120);
+  if (gMode == PLAYING) {
+    if (isRed && isLong)        { undo(&gState, &gHist); saveState(); }
+    else if (!isRed && isLong)  { reset_match(&gState, &gHist); saveState(); }
+    else                        { apply_point(&gState, &gHist, gGame, isRed); saveState(); }
+  } else { // MENU
+    if (isRed) { gGame = menu_next(&gCursor); }            // navigate (preview)
+    else {                                                 // green = select
+      state_reset(&gState); history_clear(&gHist);
+      gMode = PLAYING; saveState();
+    }
   }
-}
-
-void addPoint(bool playerA) {
-  if (playerA) scoreA++; else scoreB++;
-
-  // round won?
-  if (playerA && isRoundWon(scoreA, scoreB)) {
-    gamesA++; winFlash(COL_RED);  scoreA = scoreB = 0;
-  } else if (!playerA && isRoundWon(scoreB, scoreA)) {
-    gamesB++; winFlash(COL_GREEN); scoreB = scoreA = 0;
-  }
-
-  saveState();
-  refreshScores();
-  updateLeds();
-}
-
-void resetMatch() {
-  scoreA = scoreB = gamesA = gamesB = 0;
-  saveState();
-  prevScoreA = prevScoreB = -1;
-  refreshScores();
-  updateLeds();
+  render();
 }
 
 // ----------------------------------------------------------------------------
@@ -209,6 +227,7 @@ void setup() {
   Serial.begin(115200);
 
   prefs.begin("scoreboard", false);
+  history_clear(&gHist);
   loadState();
 
   // shared SPI bus
@@ -225,13 +244,13 @@ void setup() {
   tftBScore.begin(); tftBScore.setRotation(1);
   tftBInit.begin();  tftBInit.setRotation(1);
 
-  drawInitials(tftAInit, INITIALS_A, COL_RED);
-  drawInitials(tftBInit, INITIALS_B, COL_GREEN);
-  refreshScores();
-
   strip.begin();
   strip.setBrightness(255);
-  updateLeds();
+
+  drawInitials(tftAInit, INITIALS_A, COL_RED);
+  drawInitials(tftBInit, INITIALS_B, COL_GREEN);
+  prevMenu = false; prevCursor = -1;
+  render();
 
   pinMode(BTN_RED,   INPUT_PULLUP);
   pinMode(BTN_GREEN, INPUT_PULLUP);
@@ -242,22 +261,25 @@ void setup() {
 }
 
 void loop() {
-  // handle scoring
-  if (redPressed)   { redPressed = false;   addPoint(true);  }
-  if (greenPressed) { greenPressed = false; addPoint(false); }
+  bool redDown   = digitalRead(BTN_RED)   == LOW;
+  bool greenDown = digitalRead(BTN_GREEN) == LOW;
+  uint32_t now = millis();
 
-  // hold BOTH buttons -> reset match
-  bool bothDown = (digitalRead(BTN_RED) == LOW) && (digitalRead(BTN_GREEN) == LOW);
-  if (bothDown) {
-    if (bothHeldSince == 0) bothHeldSince = millis();
-    else if (millis() - bothHeldSince > RESET_HOLD_MS) {
-      resetMatch();
-      // wait for release so it fires once
+  // both-held -> toggle menu (once per hold)
+  static uint32_t bothSince = 0;
+  if (redDown && greenDown) {
+    if (bothSince == 0) bothSince = now;
+    else if (now - bothSince > MENU_HOLD_MS) {
+      gMode = (gMode == PLAYING) ? MENU : PLAYING;
+      bothSince = 0;
       while (digitalRead(BTN_RED) == LOW || digitalRead(BTN_GREEN) == LOW) delay(10);
-      redPressed = greenPressed = false;
-      bothHeldSince = 0;
+      redEdgeDown = greenEdgeDown = false;
+      render();
     }
-  } else {
-    bothHeldSince = 0;
+    return;                       // don't process single presses while both held
   }
+  bothSince = 0;
+
+  handleRelease(BTN_RED,   &redEdgeDown,   redDownAt,   true);
+  handleRelease(BTN_GREEN, &greenEdgeDown, greenDownAt, false);
 }
