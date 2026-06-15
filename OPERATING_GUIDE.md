@@ -80,6 +80,36 @@ scores. Your choice is remembered after power-off.
 - Plain count-up, **no win rule** — just two tally counters.
 - Use **Green long-press (reset)** or re-select the game in the menu to clear it.
 
+### Pickleball
+- First to **11 points, win by 2** (rally scoring — every tap scores).
+
+### Volleyball
+- First to **25 points, win by 2**.
+
+### Basketball 21
+- Pickup/streetball style: first to **21 points, win by 2**.
+
+### Cornhole
+- First to **21 points, win by 2**. (The optional "bust back" rule is not
+  included — it's a simple count to 21.)
+
+### Reaction Game — the F1 start-light duel
+A real-time reflex game instead of a scoreboard. Open it from the menu (hold both
+buttons ~2 s, then cycle to the last entry, **"Reaction"**, and select with green).
+
+How a round works:
+1. The 5 LEDs light up **one by one**, F1-grid style (`READY` on the screens).
+2. After a short random wait, **all the lights go OUT** (`GO!` on the screens).
+3. The **first player to tap their button wins** — their reaction time in
+   milliseconds shows on their screen (e.g. `215`).
+4. **Jump start:** tap *before* the lights go out and you lose the round instantly
+   (your screen shows `JUMP`, the other player wins).
+5. The round winner lights one LED on the tally, then the **next round starts
+   automatically**.
+
+Hold **both buttons ~2 s** to leave the Reaction game and return to the menu.
+Reaction wins are a quick duel — they are **not** saved across power-off.
+
 ---
 
 ## 4. Power & charging
@@ -100,16 +130,18 @@ scores. Your choice is remembered after power-off.
 
 The whole device runs in a browser via Wokwi. See `simulation/README.md` for
 step-by-step instructions: paste `firmware/scoreboard.ino` and
-`simulation/diagram.json` into wokwi.com, add the three Adafruit libraries, and
-press Play. Click the on-screen red/green buttons to play; hold a button (click
-and keep held) for long-press actions.
+`simulation/diagram.json` into wokwi.com, **add `game_logic.h`, `game_logic.cpp`,
+`reaction.h`, and `reaction.cpp` as separate file tabs** (the build needs them),
+add the three Adafruit libraries, and press Play. Click the on-screen red/green
+buttons to play; hold a button (click and keep held) for long-press actions.
 
 ## 6. Flashing to real hardware
 
 1. Arduino IDE → install the **ESP32** board package and the libraries:
    *Adafruit GFX*, *Adafruit ILI9341*, *Adafruit NeoPixel*.
-2. Keep `scoreboard.ino` and `game_logic.h` / `game_logic.cpp` together in the
-   same sketch folder (the sketch needs the core files beside it).
+2. Keep `scoreboard.ino`, `game_logic.h` / `game_logic.cpp`, and
+   `reaction.h` / `reaction.cpp` together in the same sketch folder (the sketch
+   needs all the core files beside it).
 3. Wire everything per `wiring/wiring_table.md`.
 4. Select **"ESP32 Dev Module"**, choose the COM port, and **Upload**.
 5. Print the case: open `enclosure/scoreboard_case.scad` in OpenSCAD, set
@@ -124,8 +156,10 @@ and keep held) for long-press actions.
 | Player initials shown on screen | `INITIALS_A` / `INITIALS_B` in `scoreboard.ino` | `"P1"` / `"P2"` |
 | Long-press time (undo/reset) | `LONG_PRESS_MS` in `scoreboard.ino` | `600` ms |
 | Menu open/close hold time | `MENU_HOLD_MS` in `scoreboard.ino` | `2000` ms |
-| Table-tennis win score | `tt_onPoint` in `game_logic.cpp` | first to 11, by 2 |
-| Badminton win + cap | `bad_onPoint` in `game_logic.cpp` | 21 by 2, cap 30 |
+| Any sport's win score / cap | the `GAMES[]` table in `game_logic.cpp` (`winScore`, `hardCap` columns) | e.g. Table Tennis `11, 0`; Badminton `21, 30` |
+| Reaction countdown speed | `COUNTDOWN_STEP_MS` in `reaction.h` | `1000` ms per light |
+| Reaction random wait range | `HOLD_MIN_MS` / `HOLD_MAX_MS` in `reaction.h` | `1000`–`3000` ms |
+| Reaction result display time | `RESULT_MS` in `reaction.h` | `2500` ms |
 
 After any change, re-upload the sketch (or re-run the Wokwi simulation).
 
