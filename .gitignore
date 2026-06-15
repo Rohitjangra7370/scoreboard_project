@@ -1,0 +1,5 @@
+firmware/tests/run
+*.o
+*.elf
+*.bin
+.playwright-mcp/
