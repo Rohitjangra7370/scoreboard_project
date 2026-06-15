@@ -339,6 +339,7 @@ void loop() {
     if (bothSince == 0) bothSince = now;
     else if (now - bothSince > MENU_HOLD_MS) {
       gMode = (gMode == MENU) ? PLAYING : MENU;
+      if (gMode == MENU) { prevMenu = false; prevCursor = -1; }  // force a fresh menu draw (e.g. coming from REACTION)
       bothSince = 0;
       while (digitalRead(BTN_RED) == LOW || digitalRead(BTN_GREEN) == LOW) delay(10);
       redEdgeDown = greenEdgeDown = false;
