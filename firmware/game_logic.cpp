@@ -25,8 +25,20 @@ static void int_format(const ScoreState* s, bool playerA, char* out, size_t n) {
   snprintf(out, n, "%d", playerA ? s->scoreA : s->scoreB);
 }
 
+// ---- Table Tennis ---------------------------------------------------------
+static void award_round(ScoreState* s, bool playerA) {
+  if (playerA) s->gamesA++; else s->gamesB++;
+  s->scoreA = s->scoreB = 0;
+}
+static void tt_onPoint(ScoreState* s, bool playerA) {
+  if (playerA) s->scoreA++; else s->scoreB++;
+  int me   = playerA ? s->scoreA : s->scoreB;
+  int them = playerA ? s->scoreB : s->scoreA;
+  if (me >= 11 && (me - them) >= 2) award_round(s, playerA);
+}
+
 const GameRules GAMES[GAME_COUNT] = {
-  { "Table Tennis", free_onPoint, int_format },  // placeholder, fixed in Task 2
+  { "Table Tennis", tt_onPoint, int_format },
   { "Tennis",       free_onPoint, int_format },  // placeholder, fixed in Task 4
   { "Badminton",    free_onPoint, int_format },  // placeholder, fixed in Task 3
   { "Free Count",   free_onPoint, int_format },
