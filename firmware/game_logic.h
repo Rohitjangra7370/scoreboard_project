@@ -2,7 +2,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-enum Game { TABLE_TENNIS, TENNIS, BADMINTON, FREE_COUNT, GAME_COUNT };
+enum Game { TABLE_TENNIS, TENNIS, BADMINTON, FREE_COUNT,
+            PICKLEBALL, VOLLEYBALL, BASKETBALL_21, CORNHOLE, GAME_COUNT };
 enum Mode { PLAYING, MENU };
 
 #define UNDO_DEPTH 20

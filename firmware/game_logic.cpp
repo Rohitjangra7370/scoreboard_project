@@ -66,10 +66,14 @@ static void tennis_format(const ScoreState* s, bool playerA, char* out, size_t n
 }
 
 const GameRules GAMES[GAME_COUNT] = {
-  { "Table Tennis", nullptr,        int_format,    11, 0  },
-  { "Tennis",       tennis_onPoint, tennis_format, 0,  0  },
-  { "Badminton",    nullptr,        int_format,    21, 30 },
-  { "Free Count",   free_onPoint,   int_format,    0,  0  },
+  { "Table Tennis",  nullptr,        int_format,    11, 0  },
+  { "Tennis",        tennis_onPoint, tennis_format, 0,  0  },
+  { "Badminton",     nullptr,        int_format,    21, 30 },
+  { "Free Count",    free_onPoint,   int_format,    0,  0  },
+  { "Pickleball",    nullptr,        int_format,    11, 0  },
+  { "Volleyball",    nullptr,        int_format,    25, 0  },
+  { "Basketball 21", nullptr,        int_format,    21, 0  },
+  { "Cornhole",      nullptr,        int_format,    21, 0  },
 };
 
 void apply_point(ScoreState* s, History* h, Game g, bool playerA) {

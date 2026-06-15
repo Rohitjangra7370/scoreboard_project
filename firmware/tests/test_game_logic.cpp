@@ -123,7 +123,47 @@ static void test_menu_next() {
   CHECK_EQ(menu_next(&cursor), TENNIS);      // 0 -> 1
   CHECK_EQ(menu_next(&cursor), BADMINTON);   // 1 -> 2
   CHECK_EQ(menu_next(&cursor), FREE_COUNT);  // 2 -> 3
-  CHECK_EQ(menu_next(&cursor), TABLE_TENNIS);// 3 -> 0 (wrap)
+  // wrap: from last game back to TABLE_TENNIS (index 0)
+  cursor = GAME_COUNT - 1;
+  CHECK_EQ(menu_next(&cursor), TABLE_TENNIS); // GAME_COUNT-1 -> 0
+}
+
+// helper: alternate to (target-1, target-1) then have A score `extra` times
+static void rally_to(ScoreState* s, History* h, Game g, int even, int extraA) {
+  for (int i = 0; i < even; i++) { apply_point(s, h, g, true); apply_point(s, h, g, false); }
+  for (int i = 0; i < extraA; i++) apply_point(s, h, g, true);
+}
+
+static void test_new_sports() {
+  ScoreState s; History h;
+
+  // Pickleball: to 11, win by 2
+  state_reset(&s); history_clear(&h);
+  rally_to(&s, &h, PICKLEBALL, 9, 0);          // 9-9
+  apply_point(&s, &h, PICKLEBALL, true);       // 10-9
+  apply_point(&s, &h, PICKLEBALL, true);       // 11-9 -> win
+  CHECK_EQ(s.gamesA, 1); CHECK_EQ(s.scoreA, 0);
+
+  // Volleyball: to 25, win by 2
+  state_reset(&s); history_clear(&h);
+  rally_to(&s, &h, VOLLEYBALL, 24, 0);         // 24-24
+  apply_point(&s, &h, VOLLEYBALL, true);       // 25-24, no win
+  CHECK_EQ(s.gamesA, 0);
+  apply_point(&s, &h, VOLLEYBALL, true);       // 26-24 -> win
+  CHECK_EQ(s.gamesA, 1);
+
+  // Basketball 21: to 21, win by 2
+  state_reset(&s); history_clear(&h);
+  rally_to(&s, &h, BASKETBALL_21, 20, 0);      // 20-20
+  apply_point(&s, &h, BASKETBALL_21, true);    // 21-20, no win
+  CHECK_EQ(s.gamesA, 0);
+
+  // Cornhole: to 21, win by 2
+  state_reset(&s); history_clear(&h);
+  rally_to(&s, &h, CORNHOLE, 19, 0);           // 19-19
+  apply_point(&s, &h, CORNHOLE, true);         // 20-19
+  apply_point(&s, &h, CORNHOLE, true);         // 21-19 -> win
+  CHECK_EQ(s.gamesA, 1);
 }
 
 int main() {
@@ -134,6 +174,7 @@ int main() {
   test_undo();
   test_reset();
   test_menu_next();
+  test_new_sports();
   if (g_failures == 0) printf("ALL TESTS PASSED\n");
   return g_failures ? 1 : 0;
 }
