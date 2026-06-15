@@ -283,8 +283,8 @@ void handleRelease(int pin, volatile bool* edge, uint32_t downAt, bool isRed) {
       }
       saveState();
     }
-    render();
   }
+  render();
 }
 
 // ----------------------------------------------------------------------------
