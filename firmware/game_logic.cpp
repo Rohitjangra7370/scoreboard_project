@@ -30,19 +30,12 @@ static void award_round(ScoreState* s, bool playerA) {
   if (playerA) s->gamesA++; else s->gamesB++;
   s->scoreA = s->scoreB = 0;
 }
-static void tt_onPoint(ScoreState* s, bool playerA) {
-  if (playerA) s->scoreA++; else s->scoreB++;
-  int me   = playerA ? s->scoreA : s->scoreB;
-  int them = playerA ? s->scoreB : s->scoreA;
-  if (me >= 11 && (me - them) >= 2) award_round(s, playerA);
-}
 
-// ---- Badminton ------------------------------------------------------------
-static void bad_onPoint(ScoreState* s, bool playerA) {
+static void count_winByTwo(ScoreState* s, bool playerA, int winScore, int hardCap) {
   if (playerA) s->scoreA++; else s->scoreB++;
   int me   = playerA ? s->scoreA : s->scoreB;
   int them = playerA ? s->scoreB : s->scoreA;
-  bool win = (me >= 21 && (me - them) >= 2) || me >= 30;
+  bool win = (me >= winScore && (me - them) >= 2) || (hardCap > 0 && me >= hardCap);
   if (win) award_round(s, playerA);
 }
 
@@ -73,15 +66,16 @@ static void tennis_format(const ScoreState* s, bool playerA, char* out, size_t n
 }
 
 const GameRules GAMES[GAME_COUNT] = {
-  { "Table Tennis", tt_onPoint,     int_format },
-  { "Tennis",       tennis_onPoint, tennis_format },
-  { "Badminton",    bad_onPoint,    int_format },
-  { "Free Count",   free_onPoint,   int_format },
+  { "Table Tennis", nullptr,        int_format,    11, 0  },
+  { "Tennis",       tennis_onPoint, tennis_format, 0,  0  },
+  { "Badminton",    nullptr,        int_format,    21, 30 },
+  { "Free Count",   free_onPoint,   int_format,    0,  0  },
 };
 
 void apply_point(ScoreState* s, History* h, Game g, bool playerA) {
   history_push(h, s);
-  GAMES[g].onPoint(s, playerA);
+  if (GAMES[g].onPoint) GAMES[g].onPoint(s, playerA);
+  else count_winByTwo(s, playerA, GAMES[g].winScore, GAMES[g].hardCap);
 }
 
 bool undo(ScoreState* s, History* h) {

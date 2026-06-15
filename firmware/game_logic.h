@@ -23,8 +23,10 @@ typedef void (*FormatFn)(const ScoreState* s, bool playerA, char* out, size_t n)
 
 struct GameRules {
   const char* name;
-  OnPointFn   onPoint;
+  OnPointFn   onPoint;    // nullptr => use the generic count_winByTwo handler
   FormatFn    format;
+  int         winScore;   // for the generic handler
+  int         hardCap;    // 0 = no cap
 };
 
 extern const GameRules GAMES[GAME_COUNT];
