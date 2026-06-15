@@ -46,11 +46,37 @@ static void bad_onPoint(ScoreState* s, bool playerA) {
   if (win) award_round(s, playerA);
 }
 
+// ---- Tennis ---------------------------------------------------------------
+static void award_game_tennis(ScoreState* s, bool playerA) {
+  if (playerA) s->gamesA++; else s->gamesB++;
+  s->tA = s->tB = 0;
+}
+static void tennis_onPoint(ScoreState* s, bool playerA) {
+  uint8_t* me  = playerA ? &s->tA : &s->tB;
+  uint8_t* opp = playerA ? &s->tB : &s->tA;
+  if (*me < 3 && *opp < 4) {            // climbing 0->15->30->40
+    (*me)++;
+  } else if (*me == 3 && *opp < 3) {    // 40 vs <40 -> game
+    award_game_tennis(s, playerA);
+  } else if (*me == 3 && *opp == 3) {   // deuce -> my advantage
+    *me = 4;
+  } else if (*me == 3 && *opp == 4) {   // I score, opp loses advantage -> deuce
+    *opp = 3;
+  } else if (*me == 4) {                // I had advantage -> game
+    award_game_tennis(s, playerA);
+  }
+}
+static const char* TENNIS_POINTS[] = { "0", "15", "30", "40", "AD" };
+static void tennis_format(const ScoreState* s, bool playerA, char* out, size_t n) {
+  uint8_t idx = playerA ? s->tA : s->tB;
+  snprintf(out, n, "%s", TENNIS_POINTS[idx]);
+}
+
 const GameRules GAMES[GAME_COUNT] = {
-  { "Table Tennis", tt_onPoint, int_format },
-  { "Tennis",       free_onPoint, int_format },  // placeholder, fixed in Task 4
-  { "Badminton",    bad_onPoint, int_format },
-  { "Free Count",   free_onPoint, int_format },
+  { "Table Tennis", tt_onPoint,     int_format },
+  { "Tennis",       tennis_onPoint, tennis_format },
+  { "Badminton",    bad_onPoint,    int_format },
+  { "Free Count",   free_onPoint,   int_format },
 };
 
 void apply_point(ScoreState* s, History* h, Game g, bool playerA) {
