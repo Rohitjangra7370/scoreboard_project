@@ -37,10 +37,19 @@ static void tt_onPoint(ScoreState* s, bool playerA) {
   if (me >= 11 && (me - them) >= 2) award_round(s, playerA);
 }
 
+// ---- Badminton ------------------------------------------------------------
+static void bad_onPoint(ScoreState* s, bool playerA) {
+  if (playerA) s->scoreA++; else s->scoreB++;
+  int me   = playerA ? s->scoreA : s->scoreB;
+  int them = playerA ? s->scoreB : s->scoreA;
+  bool win = (me >= 21 && (me - them) >= 2) || me >= 30;
+  if (win) award_round(s, playerA);
+}
+
 const GameRules GAMES[GAME_COUNT] = {
   { "Table Tennis", tt_onPoint, int_format },
   { "Tennis",       free_onPoint, int_format },  // placeholder, fixed in Task 4
-  { "Badminton",    free_onPoint, int_format },  // placeholder, fixed in Task 3
+  { "Badminton",    bad_onPoint, int_format },
   { "Free Count",   free_onPoint, int_format },
 };
 

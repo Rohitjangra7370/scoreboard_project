@@ -27,9 +27,33 @@ static void test_table_tennis() {
   CHECK_EQ(s.scoreA, 0); CHECK_EQ(s.scoreB, 0);  // round resets
 }
 
+static void test_badminton() {
+  // normal win by 2 at 21
+  ScoreState s; History h; state_reset(&s); history_clear(&h);
+  for (int i = 0; i < 20; i++) apply_point(&s, &h, BADMINTON, true);   // A=20
+  for (int i = 0; i < 20; i++) apply_point(&s, &h, BADMINTON, false);  // B=20
+  apply_point(&s, &h, BADMINTON, true);   // 21-20 no win
+  CHECK_EQ(s.gamesA, 0);
+  apply_point(&s, &h, BADMINTON, true);   // 22-20 -> win by 2
+  CHECK_EQ(s.gamesA, 1);
+
+  // hard cap at 30 wins regardless of margin.
+  // Must climb in lockstep (never 2 apart) or win-by-2 ends it at 21.
+  state_reset(&s); history_clear(&h);
+  for (int i = 0; i < 29; i++) {        // -> 29-29, no win-by-2 along the way
+    apply_point(&s, &h, BADMINTON, true);
+    apply_point(&s, &h, BADMINTON, false);
+  }
+  CHECK_EQ(s.gamesA, 0);
+  apply_point(&s, &h, BADMINTON, true);   // 30-29 -> cap win
+  CHECK_EQ(s.gamesA, 1);
+  CHECK_EQ(s.scoreA, 0);
+}
+
 int main() {
   test_free_count();
   test_table_tennis();
+  test_badminton();
   if (g_failures == 0) printf("ALL TESTS PASSED\n");
   return g_failures ? 1 : 0;
 }
