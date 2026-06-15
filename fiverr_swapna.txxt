@@ -1,0 +1,33 @@
+Here is a clean, professional product definition followed by the exact hardware component list. You can use this as your project's master spec sheet or share it directly with Swapna so she understands exactly what is being built.
+
+### **Product Definition: The Smart A4 Scoreboard**
+
+The product is a portable, A4-sized, battery-operated digital scoreboard designed to track two-player game states in real-time. It features a modular, multi-display visual architecture that clearly separates player initials and live scores, bridged by a central addressable LED column to track total games won.
+
+Engineered for commercial-grade reliability, the device is powered by an ESP32 microcontroller. This ensures zero-latency response times from the physical tactile buttons, non-volatile memory storage (so scores are never lost if the device is turned off or the battery dies), and a dedicated power-management circuit to maintain maximum screen brightness. The entire system is wireless-ready (Wi-Fi/Bluetooth capable) and housed in a custom, perfectly toleranced 3D-printable mechanical enclosure.
+
+---
+
+### **Hardware Component List (BOM)**
+
+Here are the exact physical components we are using to construct the hardware stack:
+
+**1. The Logic & Connectivity Core**
+
+* **Microcontroller:** ESP32-WROOM-32 Development Board (Acts as the primary brain, driving all displays simultaneously over a shared SPI bus and processing button interrupts).
+
+**2. The Visual Output (Displays & LEDs)**
+
+* **Primary Displays:** 4x 2.4" TFT LCD Displays with SPI interface (Used for rendering the high-resolution red and green player initials and current round scores).
+* **Game Trackers:** 1x WS2812B "NeoPixel" 8-LED Stick (A central column of brightly lit, color-changing dots to track overall games won).
+
+**3. The Physical Inputs**
+
+* **Score Triggers:** 2x 30mm Tactile Arcade Buttons (One Red, One Green for satisfying, immediate score inputs).
+* **Main Power:** 1x SPDT Slide Switch (Heavy-duty master On/Off switch).
+
+**4. The Power & Battery Management System**
+
+* **Battery:** 3.7V Lithium-Ion Battery (Provides the portable, untethered power).
+* **Charge Controller:** TP4056 Type-C Charging Module (Allows the user to safely recharge the device using a standard modern USB-C phone cable).
+* **Voltage Regulator:** MT3608 5V Step-up Boost Converter (Boosts the fluctuating 3.7V battery power to a stable, continuous 5V, guaranteeing the screens and LEDs never dim as the battery drains).
