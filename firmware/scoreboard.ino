@@ -24,12 +24,14 @@
  */
 
 #include <SPI.h>
+#include <stdio.h>
 #include <string.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 #include <Adafruit_NeoPixel.h>
 #include <Preferences.h>
 #include "game_logic.h"
+#include "reaction.h"
 
 // ----------------------------------------------------------------------------
 // Pin map  (see wiring_table.md)
@@ -87,6 +89,9 @@ History    gHist;
 Mode       gMode = PLAYING;
 Game       gGame = TABLE_TENNIS;
 int        gCursor = 0;
+ReactionState gReact;
+ReactionPhase prevReactPhase = R_IDLE;
+int prevReactLeds = -1;
 
 // redraw caches (avoid flicker)
 char prevAText[8] = "", prevBText[8] = "";
@@ -119,7 +124,7 @@ void saveState() {
   prefs.putInt("gamesB", gState.gamesB);
   prefs.putUChar("tA", gState.tA);
   prefs.putUChar("tB", gState.tB);
-  prefs.putUChar("game", (uint8_t)gGame);
+  prefs.putUChar("game", (gMode == REACTION) ? (uint8_t)REACTION_ITEM : (uint8_t)gGame);
 }
 
 void loadState() {
@@ -129,8 +134,9 @@ void loadState() {
   gState.gamesB = prefs.getInt("gamesB", 0);
   gState.tA = prefs.getUChar("tA", 0);
   gState.tB = prefs.getUChar("tB", 0);
-  gGame = (Game)prefs.getUChar("game", (uint8_t)TABLE_TENNIS);
-  gCursor = (int)gGame;
+  uint8_t item = prefs.getUChar("game", (uint8_t)TABLE_TENNIS);
+  if (item >= GAME_COUNT) { gMode = REACTION; gGame = TABLE_TENNIS; gCursor = REACTION_ITEM; }
+  else                    { gMode = PLAYING;  gGame = (Game)item;   gCursor = item; }
 }
 
 // ----------------------------------------------------------------------------
@@ -168,13 +174,64 @@ void renderLeds() {
   strip.show();
 }
 
+void reactionText(int ms, char* out, size_t n) {
+  if (ms == -2)      snprintf(out, n, "JUMP");
+  else if (ms == -1) snprintf(out, n, "--");
+  else               snprintf(out, n, "%d", ms);
+}
+
+void showStartLeds(uint8_t n) {
+  strip.clear();
+  for (uint8_t i = 0; i < n && i < NUM_LEDS; i++)
+    strip.setPixelColor(i, strip.Color(80, 0, 0));
+  strip.show();
+}
+
+void showReactionTally() {
+  strip.clear();
+  for (int i = 0; i < gReact.winsA && i < 4; i++)
+    strip.setPixelColor(i, strip.Color(60, 0, 0));
+  for (int i = 0; i < gReact.winsB && i < 4; i++)
+    strip.setPixelColor(NUM_LEDS - 1 - i, strip.Color(0, 60, 0));
+  strip.show();
+}
+
+void renderReaction() {
+  // LEDs
+  if (gReact.phase == R_RESULT) {
+    if (prevReactPhase != R_RESULT) showReactionTally();
+  } else if (gReact.ledsLit != prevReactLeds || prevReactPhase != gReact.phase) {
+    showStartLeds(gReact.ledsLit);
+    prevReactLeds = gReact.ledsLit;
+  }
+  // screens, on phase change
+  if (gReact.phase != prevReactPhase) {
+    if (gReact.phase == R_COUNTDOWN || gReact.phase == R_ARMED) {
+      drawBig(tftAScore, "READY", COL_WHITE, 5);
+      drawBig(tftBScore, "READY", COL_WHITE, 5);
+    } else if (gReact.phase == R_GO) {
+      drawBig(tftAScore, "GO!", COL_GREEN, 8);
+      drawBig(tftBScore, "GO!", COL_GREEN, 8);
+    } else if (gReact.phase == R_RESULT) {
+      char a[8], b[8];
+      reactionText(gReact.reactionA, a, sizeof(a));
+      reactionText(gReact.reactionB, b, sizeof(b));
+      drawBig(tftAScore, a, COL_RED,   6);
+      drawBig(tftBScore, b, COL_GREEN, 6);
+    }
+    prevReactPhase = gReact.phase;
+  }
+}
+
 void render() {
+  if (gMode == REACTION) { renderReaction(); return; }
+
   if (gMode == MENU) {
-    int nextCursor = (gCursor + 1) % GAME_COUNT;
+    int nextc = menu_advance(gCursor);
     if (!prevMenu || prevCursor != gCursor) {
       drawBig(tftAInit,  "MENU", COL_WHITE, 4);
-      drawBig(tftAScore, game_name((Game)gCursor),    COL_GREEN, 2);
-      drawBig(tftBScore, game_name((Game)nextCursor), COL_WHITE, 2);
+      drawBig(tftAScore, menu_name(gCursor), COL_GREEN, 2);
+      drawBig(tftBScore, menu_name(nextc),   COL_WHITE, 2);
       drawBig(tftBInit,  "R:next G:ok", COL_WHITE, 2);
       prevMenu = true; prevCursor = gCursor;
     }
@@ -211,13 +268,23 @@ void handleRelease(int pin, volatile bool* edge, uint32_t downAt, bool isRed) {
     else if (!isRed && isLong)  { reset_match(&gState, &gHist); saveState(); }
     else                        { apply_point(&gState, &gHist, gGame, isRed); saveState(); }
   } else { // MENU
-    if (isRed) { gGame = menu_next(&gCursor); }            // navigate (preview)
-    else {                                                 // green = select
-      state_reset(&gState); history_clear(&gHist);
-      gMode = PLAYING; saveState();
+    if (isRed) { gCursor = menu_advance(gCursor); }
+    else {                                         // green = select
+      if (gCursor < GAME_COUNT) {
+        gGame = (Game)gCursor;
+        state_reset(&gState); history_clear(&gHist);
+        gMode = PLAYING;
+      } else {                                     // Reaction entry
+        gMode = REACTION;
+        drawInitials(tftAInit, INITIALS_A, COL_RED);
+        drawInitials(tftBInit, INITIALS_B, COL_GREEN);
+        prevReactPhase = R_IDLE; prevReactLeds = -1;
+        reaction_start(&gReact, millis());
+      }
+      saveState();
     }
+    render();
   }
-  render();
 }
 
 // ----------------------------------------------------------------------------
@@ -250,6 +317,7 @@ void setup() {
   drawInitials(tftAInit, INITIALS_A, COL_RED);
   drawInitials(tftBInit, INITIALS_B, COL_GREEN);
   prevMenu = false; prevCursor = -1;
+  if (gMode == REACTION) { prevReactPhase = R_IDLE; prevReactLeds = -1; reaction_start(&gReact, millis()); }
   render();
 
   pinMode(BTN_RED,   INPUT_PULLUP);
@@ -261,24 +329,33 @@ void setup() {
 }
 
 void loop() {
+  uint32_t now = millis();
   bool redDown   = digitalRead(BTN_RED)   == LOW;
   bool greenDown = digitalRead(BTN_GREEN) == LOW;
-  uint32_t now = millis();
 
-  // both-held -> toggle menu (once per hold)
+  // both-held -> toggle menu (from PLAYING or REACTION -> MENU; from MENU -> PLAYING)
   static uint32_t bothSince = 0;
   if (redDown && greenDown) {
     if (bothSince == 0) bothSince = now;
     else if (now - bothSince > MENU_HOLD_MS) {
-      gMode = (gMode == PLAYING) ? MENU : PLAYING;
+      gMode = (gMode == MENU) ? PLAYING : MENU;
       bothSince = 0;
       while (digitalRead(BTN_RED) == LOW || digitalRead(BTN_GREEN) == LOW) delay(10);
       redEdgeDown = greenEdgeDown = false;
       render();
     }
-    return;                       // don't process single presses while both held
+    return;
   }
   bothSince = 0;
+
+  if (gMode == REACTION) {
+    // feed presses at press-time (timing matters), not on release
+    if (redEdgeDown)   { reaction_button(&gReact, true,  redDownAt);   redEdgeDown = false; }
+    if (greenEdgeDown) { reaction_button(&gReact, false, greenDownAt); greenEdgeDown = false; }
+    reaction_update(&gReact, now);
+    render();
+    return;
+  }
 
   handleRelease(BTN_RED,   &redEdgeDown,   redDownAt,   true);
   handleRelease(BTN_GREEN, &greenEdgeDown, greenDownAt, false);
