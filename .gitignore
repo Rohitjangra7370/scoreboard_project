@@ -4,3 +4,4 @@ firmware/tests/run_reaction
 *.elf
 *.bin
 .playwright-mcp/
+fiverr_swapna.txxt
