@@ -50,6 +50,32 @@ These keep the build reliable; quantities are per unit.
 
 ---
 
+## Compatibility & US sourcing
+
+All parts are common and stocked in the USA (Amazon, Adafruit, SparkFun, Micro
+Center, DigiKey, Mouser). Read these before ordering:
+
+- **⚠️ Displays — buy the SPI version, NOT parallel.** The ILI9341 is sold in two
+  interfaces. This project uses **SPI** (a small ~9–14-pin header: VCC, GND, CS,
+  RST, DC, SDI/MOSI, SCK, LED, SDO/MISO). The common cheap "red 2.4″" board is
+  usually the **8-bit parallel** type (40-pin) and will **not** work with this
+  firmware. When ordering, confirm the listing says **"SPI"** and shows the
+  9–14-pin header.
+- **NeoPixel stick:** any **WS2812B** (or **SK6812** — same protocol/brightness)
+  8-LED stick works with the `Adafruit NeoPixel` library. Adafruit's own stick now
+  ships as SK6812; clones are typically WS2812B. Either is fine.
+- **Logic levels:** everything runs at 3.3 V except the WS2812B data line (5 V part
+  driven by 3.3 V GPIO) — see the data-line note in `wiring_table.md`.
+- **⚠️ Display power:** four TFT backlights pulling from the ESP32 dev board's
+  on-board 3.3 V regulator is marginal and can run hot. For a reliable build, feed
+  the four displays' VCC from a **dedicated 3.3 V supply** (a small AMS1117-3.3 or
+  buck module off the 5 V rail) rather than the ESP32's 3V3 pin.
+- **Boost sizing:** keep the MT3608 set to 5.0 V; total peak load (4 displays +
+  ESP32 + LEDs) is roughly ≤1 A with the LED brightness used in firmware, within a
+  typical MT3608's range. If you raise LED brightness a lot, size the boost up.
+- **TP4056:** order the **USB-C** variant **with battery protection** (some bare
+  modules omit it).
+
 ## Notes
 
 - **Wiring & pins:** `wiring/wiring_table.md`. **Assembly/usage:** `OPERATING_GUIDE.md`.
