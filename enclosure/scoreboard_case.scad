@@ -1,13 +1,16 @@
 // ============================================================================
-// Smart A4 Scoreboard - Parametric Enclosure  (Rev D — LED-array pivot)
+// Smart A4 Scoreboard - Parametric Enclosure  (Rev E — 4× square matrices)
 // ----------------------------------------------------------------------------
-// Hardware: 2× MAX7219 FC-16 "4-in-1" 8×32 matrix modules (one per player),
+// Hardware: 4× MAX7219 16×16 square matrix modules (~70 mm), stacked 2 per
+//           player: initials over score.
 //           6× 5 mm status LEDs (3 per side, best-of-3 tally),
 //           4× 12 mm panel momentary push-buttons (2 per player).
 //
 // A4-footprint, two-part (tray + faceplate) 3D-printable case.
 // Layout (landscape A4, 297 × 210 mm):
-//   [A matrix ][A LEDs+Btns] || [B LEDs+Btns][B matrix ]
+//   [A-init ] [B-init ]      <- top    square windows
+//   [A-score] [B-score]      <- bottom square windows
+//   LEDs + buttons sit in the strip below each player's column.
 //
 // Render the two parts separately for printing:
 //   openscad -o faceplate.stl -D 'PART="faceplate"' scoreboard_case.scad
@@ -27,37 +30,29 @@ FACE = 2.5;            // faceplate thickness
 CAVITY_H = 22;         // internal depth for boards/battery
 CORNER_R = 6;          // outer corner radius
 
-// ---- MAX7219 FC-16 4-in-1 matrix module ------------------------------------
-// Active LED area: 4 chained 8×8 blocks, each 32×32 mm → 128 mm × 32 mm.
-// Window adds a 1 mm bezel margin on each side.
-MAT_WIN_W   = 130;     // matrix window width  (128 + 1 mm margin each side)
-MAT_WIN_H   = 34;      // matrix window height ( 32 + 1 mm margin each side)
-MAT_WIN_Y   = A4_H / 2 + 10;   // window centre Y (upper half — score display)
+// ---- MAX7219 16×16 square matrix module ------------------------------------
+// Physical module ≈ 70 mm; active LED area ≈ 64 mm. The 68 mm window exposes
+// the active area and captures the module body behind the plate.
+MAT_WIN = 68;          // square window side
 
-// Horizontal placement: each matrix window is centred in its player half,
-// with MARGIN_X inset from the outer edge to allow wall + boss clearance.
-// Boss outer radius = POST_D/2 = 3.5 mm at x=INSET=10 → left edge of A
-// window must exceed 10+3.5 = 13.5 mm; margin=15 gives 5 mm clearance.
-MAT_MARGIN_X = 15;     // inset from A4 left/right edge to window left edge
+// Column centres (A left, B right), symmetric about the A4 mid-line.
+MAT_A_X = 78;                 // left column centre  (window 44..112)
+MAT_B_X = A4_W - 78;          // right column centre (window 185..253) = 219
 
-// Player A matrix centre X (left half)
-MAT_A_X = MAT_MARGIN_X + MAT_WIN_W / 2;   // = 80 mm
-// Player B matrix centre X (right half) — mirror
-MAT_B_X = A4_W - MAT_MARGIN_X - MAT_WIN_W / 2;  // = 217 mm
-// Gap between A right edge (145) and B left edge (152) = 7 mm
+// Row centres: initials on top, score below.
+INIT_Y  = 166;                // top window  132..200
+SCORE_Y = 88;                 // bottom window 54..122  (gap 122..132 = 10 mm)
 
 // ---- 5 mm status LED holes (best-of-3 tally) -------------------------------
+// Sit in the strip below each player's score window.
 LED5_D       = 5.2;    // bore for 5 mm LED body
 LED5_SPACING = 10;     // centre-to-centre spacing in the row of 3
-LED5_Y       = MAT_WIN_Y - MAT_WIN_H / 2 - 14;  // below the matrix window
-// LED row X centres (3 LEDs per player, centred under their matrix window)
-LED5_A_X = MAT_A_X;   // mid LED aligns with matrix centre
-LED5_B_X = MAT_B_X;
+LED5_Y       = 44;     // below the bottom (score) window
 
 // ---- Panel push-button holes -----------------------------------------------
 BTN_D        = 12.2;   // bore for 12 mm panel momentary button
 BTN_SPACING  = 20;     // centre-to-centre between the +/- pair
-BTN_Y        = LED5_Y - 18;  // below the LED row
+BTN_Y        = 22;     // bottom strip, below the LED row
 
 // ---- USB-C charge port (TP4056) on right side wall -------------------------
 USB_W = 12;            // cutout width
@@ -75,6 +70,26 @@ $fn = 48;
 // ---------------------------------------------------------------------------
 module rrect(w, h, r) {
     hull() for (x = [r, w - r], y = [r, h - r]) translate([x, y]) circle(r);
+}
+
+// A square matrix window centred at (cx, cy).
+module mat_window(cx, cy) {
+    translate([cx - MAT_WIN / 2, cy - MAT_WIN / 2, -1])
+        cube([MAT_WIN, MAT_WIN, FACE + 2]);
+}
+
+// 3 LED holes centred on column X cx, at row LED5_Y.
+module led_row(cx) {
+    for (i = [-1, 0, 1])
+        translate([cx + i * LED5_SPACING, LED5_Y, -1])
+            cylinder(d = LED5_D, h = FACE + 2);
+}
+
+// 2 button holes centred on column X cx, at row BTN_Y.
+module btn_pair(cx) {
+    for (i = [-1, 1])
+        translate([cx + i * BTN_SPACING / 2, BTN_Y, -1])
+            cylinder(d = BTN_D, h = FACE + 2);
 }
 
 // ---------------------------------------------------------------------------
@@ -106,10 +121,10 @@ module tray() {
 }
 
 // ---------------------------------------------------------------------------
-// Faceplate (top): A4 panel — Rev D (LED-array pivot)
-//   • 2× matrix windows (one per player)
-//   • 6× 5 mm LED holes (3 per side)
-//   • 4× 12 mm button holes (2 per player)
+// Faceplate (top): A4 panel — Rev E (4 square matrices)
+//   • 4× square matrix windows (initials top, score bottom; A left, B right)
+//   • 6× 5 mm LED holes (3 per side, below each column)
+//   • 4× 12 mm button holes (2 per player, below the LEDs)
 //   • USB-C pass-through slot (matches tray)
 //   • 4× M3 screw holes (match tray bosses)
 // ---------------------------------------------------------------------------
@@ -118,41 +133,25 @@ module faceplate() {
         // solid A4 panel
         linear_extrude(FACE) rrect(A4_W, A4_H, CORNER_R);
 
-        // ---- Player A matrix window (left) ---------------------------------
-        translate([MAT_A_X - MAT_WIN_W / 2,
-                   MAT_WIN_Y - MAT_WIN_H / 2, -1])
-            cube([MAT_WIN_W, MAT_WIN_H, FACE + 2]);
+        // ---- 4 square matrix windows --------------------------------------
+        mat_window(MAT_A_X, INIT_Y);    // A initials (top-left)
+        mat_window(MAT_A_X, SCORE_Y);   // A score    (bottom-left)
+        mat_window(MAT_B_X, INIT_Y);    // B initials (top-right)
+        mat_window(MAT_B_X, SCORE_Y);   // B score    (bottom-right)
 
-        // ---- Player B matrix window (right) --------------------------------
-        translate([MAT_B_X - MAT_WIN_W / 2,
-                   MAT_WIN_Y - MAT_WIN_H / 2, -1])
-            cube([MAT_WIN_W, MAT_WIN_H, FACE + 2]);
+        // ---- status LEDs (3 per player, below each column) ----------------
+        led_row(MAT_A_X);
+        led_row(MAT_B_X);
 
-        // ---- Player A: 3 status LED holes (centred under A matrix) ---------
-        for (i = [-1, 0, 1])
-            translate([LED5_A_X + i * LED5_SPACING, LED5_Y, -1])
-                cylinder(d = LED5_D, h = FACE + 2);
+        // ---- push buttons (2 per player, below the LEDs) ------------------
+        btn_pair(MAT_A_X);
+        btn_pair(MAT_B_X);
 
-        // ---- Player B: 3 status LED holes (centred under B matrix) ---------
-        for (i = [-1, 0, 1])
-            translate([LED5_B_X + i * LED5_SPACING, LED5_Y, -1])
-                cylinder(d = LED5_D, h = FACE + 2);
-
-        // ---- Player A: 2 push-button holes (+/- score) ---------------------
-        for (i = [-1, 1])
-            translate([MAT_A_X + i * BTN_SPACING / 2, BTN_Y, -1])
-                cylinder(d = BTN_D, h = FACE + 2);
-
-        // ---- Player B: 2 push-button holes (+/- score) ---------------------
-        for (i = [-1, 1])
-            translate([MAT_B_X + i * BTN_SPACING / 2, BTN_Y, -1])
-                cylinder(d = BTN_D, h = FACE + 2);
-
-        // ---- USB-C slot (right edge, matches tray cutout) ------------------
+        // ---- USB-C slot (right edge, matches tray cutout) -----------------
         translate([A4_W - WALL - 1, A4_H / 2 - USB_W / 2, -1])
             cube([WALL + 2, USB_W, USB_H + 2]);
 
-        // ---- M3 screw holes (match tray boss positions) --------------------
+        // ---- M3 screw holes (match tray boss positions) -------------------
         for (x = [INSET, A4_W - INSET], y = [INSET, A4_H - INSET])
             translate([x, y, -1]) cylinder(d = SCREW_D, h = FACE + 2);
     }
