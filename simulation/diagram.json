@@ -16,19 +16,19 @@
     { "type": "wokwi-led", "id": "lb3", "top": 200, "left": 200,  "attrs": { "color": "red" } }
   ],
   "connections": [
-    [ "esp:D23", "mA:DIN", "green", [] ], [ "esp:D18", "mA:CLK", "yellow", [] ], [ "esp:D5", "mA:CS", "orange", [] ],
-    [ "mA:DOUT", "mB:DIN", "green", [] ], [ "esp:D18", "mB:CLK", "yellow", [] ], [ "esp:D5", "mB:CS", "orange", [] ],
+    [ "esp:23", "mA:DIN", "green", [] ], [ "esp:18", "mA:CLK", "yellow", [] ], [ "esp:5", "mA:CS", "orange", [] ],
+    [ "mA:DOUT", "mB:DIN", "green", [] ], [ "esp:18", "mB:CLK", "yellow", [] ], [ "esp:5", "mB:CS", "orange", [] ],
     [ "esp:5V", "mA:VCC", "red", [] ], [ "esp:GND.1", "mA:GND", "black", [] ],
     [ "esp:5V", "mB:VCC", "red", [] ], [ "esp:GND.1", "mB:GND", "black", [] ],
-    [ "esp:D32", "bAu:1.l", "blue", [] ], [ "bAu:2.l", "esp:GND.2", "black", [] ],
-    [ "esp:D33", "bAd:1.l", "blue", [] ], [ "bAd:2.l", "esp:GND.2", "black", [] ],
-    [ "esp:D25", "bBu:1.l", "blue", [] ], [ "bBu:2.l", "esp:GND.2", "black", [] ],
-    [ "esp:D13", "bBd:1.l", "blue", [] ], [ "bBd:2.l", "esp:GND.2", "black", [] ],
-    [ "esp:D26", "la1:A", "green", [] ], [ "la1:C", "esp:GND.3", "black", [] ],
-    [ "esp:D27", "la2:A", "green", [] ], [ "la2:C", "esp:GND.3", "black", [] ],
-    [ "esp:D14", "la3:A", "green", [] ], [ "la3:C", "esp:GND.3", "black", [] ],
-    [ "esp:D4",  "lb1:A", "red", [] ],   [ "lb1:C", "esp:GND.3", "black", [] ],
-    [ "esp:D16", "lb2:A", "red", [] ],   [ "lb2:C", "esp:GND.3", "black", [] ],
-    [ "esp:D17", "lb3:A", "red", [] ],   [ "lb3:C", "esp:GND.3", "black", [] ]
+    [ "esp:32", "bAu:1.l", "blue", [] ], [ "bAu:2.l", "esp:GND.2", "black", [] ],
+    [ "esp:33", "bAd:1.l", "blue", [] ], [ "bAd:2.l", "esp:GND.2", "black", [] ],
+    [ "esp:25", "bBu:1.l", "blue", [] ], [ "bBu:2.l", "esp:GND.2", "black", [] ],
+    [ "esp:13", "bBd:1.l", "blue", [] ], [ "bBd:2.l", "esp:GND.2", "black", [] ],
+    [ "esp:26", "la1:A", "green", [] ], [ "la1:C", "esp:GND.3", "black", [] ],
+    [ "esp:27", "la2:A", "green", [] ], [ "la2:C", "esp:GND.3", "black", [] ],
+    [ "esp:14", "la3:A", "green", [] ], [ "la3:C", "esp:GND.3", "black", [] ],
+    [ "esp:4",  "lb1:A", "red", [] ],   [ "lb1:C", "esp:GND.3", "black", [] ],
+    [ "esp:16", "lb2:A", "red", [] ],   [ "lb2:C", "esp:GND.3", "black", [] ],
+    [ "esp:17", "lb3:A", "red", [] ],   [ "lb3:C", "esp:GND.3", "black", [] ]
   ]
 }
