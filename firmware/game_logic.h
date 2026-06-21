@@ -39,6 +39,7 @@ extern const GameRules GAMES[GAME_COUNT];
 void state_reset(ScoreState* s);
 void history_clear(History* h);
 void apply_point(ScoreState* s, History* h, Game g, bool playerA);
+void decrement_point(ScoreState* s, Game g, bool playerA);  // remove one point from THAT player only (floor 0)
 bool undo(ScoreState* s, History* h);          // false if nothing to undo
 void reset_match(ScoreState* s, History* h);   // pushes snapshot, zeroes scores+games
 void format_score(const ScoreState* s, Game g, bool playerA, char* out, size_t n);

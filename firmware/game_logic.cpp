@@ -82,6 +82,18 @@ void apply_point(ScoreState* s, History* h, Game g, bool playerA) {
   else count_winByTwo(s, playerA, GAMES[g].winScore, GAMES[g].hardCap);
 }
 
+// Remove one point from THAT player only — corrects a misclick without ever
+// touching the opponent's score. Floors at 0; does not un-win a finished round.
+void decrement_point(ScoreState* s, Game g, bool playerA) {
+  if (GAMES[g].onPoint == tennis_onPoint) {
+    uint8_t* me = playerA ? &s->tA : &s->tB;
+    if (*me > 0) (*me)--;            // AD(4)->40(3)->30(2)->15(1)->0
+  } else {
+    int* me = playerA ? &s->scoreA : &s->scoreB;
+    if (*me > 0) (*me)--;
+  }
+}
+
 bool undo(ScoreState* s, History* h) {
   if (h->len == 0) return false;
   *s = h->items[--h->len];

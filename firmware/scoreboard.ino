@@ -118,8 +118,8 @@ void loop() {
   switch (ev) {
     case EV_A_UP:   apply_point(&gState, &gHist, gGame, true);  break;
     case EV_B_UP:   apply_point(&gState, &gHist, gGame, false); break;
-    case EV_A_DOWN: undo(&gState, &gHist); break;
-    case EV_B_DOWN: undo(&gState, &gHist); break;
+    case EV_A_DOWN: decrement_point(&gState, gGame, true);  break;  // only A
+    case EV_B_DOWN: decrement_point(&gState, gGame, false); break;  // only B
     default: return;
   }
   saveState();

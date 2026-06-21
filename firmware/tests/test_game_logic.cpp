@@ -118,6 +118,29 @@ static void test_reset() {
   CHECK_EQ(s.scoreA, 11);
 }
 
+static void test_decrement_per_player() {
+  ScoreState s; History h; state_reset(&s); history_clear(&h);
+
+  // count game: A-down reduces only A, B untouched
+  apply_point(&s, &h, FREE_COUNT, true);   // A=1
+  apply_point(&s, &h, FREE_COUNT, true);   // A=2
+  apply_point(&s, &h, FREE_COUNT, false);  // B=1
+  decrement_point(&s, FREE_COUNT, true);   // A-down
+  CHECK_EQ(s.scoreA, 1); CHECK_EQ(s.scoreB, 1);   // B not touched (the bug)
+  decrement_point(&s, FREE_COUNT, false);  // B-down
+  CHECK_EQ(s.scoreA, 1); CHECK_EQ(s.scoreB, 0);
+  decrement_point(&s, FREE_COUNT, false);  // floor at 0, never negative
+  CHECK_EQ(s.scoreB, 0);
+
+  // tennis: steps that player's point back one, opponent untouched
+  state_reset(&s); history_clear(&h);
+  apply_point(&s, &h, TENNIS, true);       // A: 15 (tA=1)
+  apply_point(&s, &h, TENNIS, true);       // A: 30 (tA=2)
+  apply_point(&s, &h, TENNIS, false);      // B: 15 (tB=1)
+  decrement_point(&s, TENNIS, true);       // A-down -> back to 15
+  CHECK_EQ(s.tA, 1); CHECK_EQ(s.tB, 1);    // B untouched
+}
+
 static void test_menu() {
   // NUM_MENU = GAME_COUNT (8) + 1 reaction entry = 9
   CHECK_EQ(NUM_MENU, GAME_COUNT + 1);
@@ -188,6 +211,7 @@ int main() {
   test_menu();
   test_new_sports();
   test_match_over_bo3();
+  test_decrement_per_player();
   if (g_failures == 0) printf("ALL TESTS PASSED\n");
   return g_failures ? 1 : 0;
 }
