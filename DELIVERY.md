@@ -27,7 +27,7 @@ enclosure/   scoreboard_case.scad  parametric 3D-printable case (A4, 2 parts)
 - **Wi-Fi SoftAP captive portal:** connect phone to `Scoreboard-XXXX`, pick game and enter player names — no app required.
 - **8 game modes:** Table Tennis, Tennis, Badminton, Free Count, Pickleball, Volleyball, Basketball 21, Cornhole.
 - **Non-volatile memory (NVS):** scores, round wins, player names, and selected game survive power-off / dead battery.
-- **Full undo:** DOWN button steps back through scoring history, including across round boundaries.
+- **Per-player correction:** each player's DOWN button removes one point from **that player only** (never affects the opponent's score).
 - Power chain spec'd: LiPo → TP4056 USB-C charge → MT3608 5V boost → SPDT master switch.
 - Custom A4 enclosure (tray + faceplate, Rev F) with 4 square ~68 mm windows in a 2×2 grid (top row: A-initials left, B-initials right; bottom row: A-score left, B-score right), plus 6 LED holes, 4 button holes below each player's column, and USB-C charge port cut-out.
 

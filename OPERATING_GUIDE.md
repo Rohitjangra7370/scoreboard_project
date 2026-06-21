@@ -54,11 +54,14 @@ Each player has **two buttons**:
 
 | Button | What it does |
 |--------|-------------|
-| **UP** (Player A or B) | +1 point to that player |
-| **DOWN** (Player A or B) | Undo the last point scored (can undo multiple times) |
+| **UP** (Player A or B) | +1 point to that player (follows the sport's scoring rules) |
+| **DOWN** (Player A or B) | Removes one point from **that player only** — corrects a misclick |
 
-- Undo works across game boundaries — if a round just ended, pressing DOWN
-  reverses it and restores the previous score.
+- Each DOWN button affects **only its own player's** score; it never changes
+  the opponent's score. Press it as many times as needed (it stops at 0).
+- DOWN steps a normal point back (e.g. tennis 40 → 30). It does not reverse an
+  already-completed round win — fix a wrongly-awarded round from the web page's
+  **Reset** instead.
 
 ---
 
@@ -103,8 +106,7 @@ choice is remembered after power-off.
   full brightness even as the battery drains.
 - **Memory:** scores, games won, player names, and the selected game are written
   to the ESP32's flash (NVS) on every change, so turning the device off — or a
-  dead battery — never loses the score. (The undo history is the one exception:
-  it clears on power-off.)
+  dead battery — never loses the score.
 
 ---
 
