@@ -29,7 +29,7 @@ enclosure/   scoreboard_case.scad  parametric 3D-printable case (A4, 2 parts)
 - **Non-volatile memory (NVS):** scores, round wins, player names, and selected game survive power-off / dead battery.
 - **Per-player correction:** each player's DOWN button removes one point from **that player only** (never affects the opponent's score).
 - Power chain spec'd: LiPo → TP4056 USB-C charge → MT3608 5V boost → SPDT master switch.
-- Custom A4 enclosure (tray + faceplate, Rev F) with 4 square ~68 mm windows in a 2×2 grid (top row: A-initials left, B-initials right; bottom row: A-score left, B-score right), plus 6 LED holes, 4 button holes below each player's column, and USB-C charge port cut-out.
+- Custom A4 enclosure (tray + faceplate, Rev F) with 4 square ~68 mm windows in a 2×2 grid (top row: A/B initials; bottom row: A/B score), a central 2×3 LED tally between the columns (green = A, red = B), 4 button holes below the columns, heat-set bosses, registration lip, matrix-locating frames, PCB standoffs, and a USB-C charge cut-out.
 
 ## How to run the simulation
 See `simulation/README.md` — paste the sketch + diagram into wokwi.com, press

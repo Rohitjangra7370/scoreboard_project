@@ -30,10 +30,13 @@ bottom=score); modules 3–4 = Player B (right column, top=initials, bottom=scor
 
 **Layout (2×2 grid, front face):**
 ```
-Top row:    [A-initials (mod 1)]  [B-initials (mod 3)]
-Bottom row: [A-score    (mod 2)]  [B-score    (mod 4)]
-            [A LEDs + buttons ]   [B LEDs + buttons  ]
+Top row:    [A-initials (mod 1)]   ●●   [B-initials (mod 3)]
+Bottom row: [A-score    (mod 2)]   ●●   [B-score    (mod 4)]
+                                   ●●
+            [ A↑ A↓ ]                    [ B↑ B↓ ]
 ```
+Centre column ●● = the 6 round-tally LEDs (2×3): left = 3 green (A), right =
+3 red (B). The 4 buttons sit below each player's matrix column.
 
 ---
 

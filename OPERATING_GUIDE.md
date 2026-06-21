@@ -11,14 +11,13 @@ Setup is done from your phone over Wi-Fi — no app required.
 ## 1. At a glance
 
 ```
-┌─────────────────┬─────────────────┐
-│ A-initials (top)│ B-initials (top)│   ← 16×16 square modules (top row)
-├─────────────────┼─────────────────┤
-│ A-score (bottom)│ B-score (bottom)│   ← 16×16 square modules (bottom row)
-├─────────────────┼─────────────────┤
-│ ● ● ●  A↑ A↓   │  B↑ B↓  ● ● ●  │   ← green LEDs + buttons (A) | buttons + red LEDs (B)
-└─────────────────┴─────────────────┘
-      Player A column                       Player B column
+    Player A                    Player B
+┌──────────────┐            ┌──────────────┐
+│  A-initials  │   ● ●      │  B-initials  │   top row = 16×16 modules
+├──────────────┤   ● ●      ├──────────────┤   centre = 6 LEDs (2×3 tally):
+│   A-score    │   ● ●      │   B-score    │     left col green = A's rounds
+└──────────────┘            └──────────────┘     right col red  = B's rounds
+     A↑  A↓                      B↑  B↓          buttons below each column
 ```
 
 - **Player A = left column (2 squares) + green LEDs**, **Player B = right column (2 squares) + red LEDs**.

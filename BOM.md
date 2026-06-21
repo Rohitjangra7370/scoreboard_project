@@ -89,7 +89,7 @@ These keep the build reliable; quantities are per unit.
 
 | # | Item | Spec | Qty | Notes |
 |---|------|------|-----|-------|
-| 16 | Case — tray + faceplate | 3D print from `enclosure/scoreboard_case.scad` Rev F (export `tray.stl` + `faceplate.stl`) | 1 set | A4 footprint. Faceplate: 4 square ~68 mm windows in a 2×2 grid (top: A/B initials; bottom: A/B score), 6 LED + 4 button holes (chamfered), a registration lip that nests into the tray, and locating frames behind each window. Tray: 4 heat-set corner bosses, 6 PCB standoffs, USB-C cut-out. |
+| 16 | Case — tray + faceplate | 3D print from `enclosure/scoreboard_case.scad` Rev F (export `tray.stl` + `faceplate.stl`) | 1 set | A4 footprint. Faceplate: 4 square ~68 mm windows in a 2×2 grid (top: A/B initials; bottom: A/B score), a central 2×3 LED tally (6 holes) between the columns, 4 button holes below the columns (all chamfered), a registration lip, and locating frames behind each window. Tray: 4 heat-set corner bosses, 6 PCB standoffs, USB-C cut-out. |
 | 17 | Filament | PLA or PETG (PETG if heat/impact matters) | ~150–250 g | For both parts. |
 | 18 | **M3 heat-set inserts** (brass) | M3 × ~4 mm | 4 | Press into the 4 tray corner bosses (bores are sized 4.0 mm for these). Gives durable threads. |
 | 19 | **M3 × 8 mm** machine screws | countersunk/pan | 4 | Faceplate → tray. Heads sit flush in the counterbored faceplate holes. |
