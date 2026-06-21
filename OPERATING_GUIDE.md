@@ -1,181 +1,169 @@
 # Smart A4 Scoreboard — Operating Guide
 
-A portable, battery-powered, two-player digital scoreboard. Four screens show
-each player's initials and live score; a central LED column tracks games won.
-Four built-in scoring modes (Table Tennis, Tennis, Badminton, Free Count), full
-undo, and a menu to switch games — all driven by just two buttons.
+A portable, battery-powered, two-player digital scoreboard. Each player has two
+dedicated MAX7219 16×16 square matrix modules — the top square shows their
+initials (up to 2 letters) and the bottom square shows their live score (00–99
+or tennis AD); six indicator LEDs (3 green, 3 red) track games won per player.
+Setup is done from your phone over Wi-Fi — no app required.
 
 ---
 
 ## 1. At a glance
 
 ```
-[ P1 initials ][ P1 score ]   ||  LED column  ||   [ P2 score ][ P2 initials ]
-   (red)          (red)         games won (R | G)      (green)       (green)
-        RED arcade button = Player 1            GREEN arcade button = Player 2
+┌─────────────────┬─────────────────┐
+│ A-initials (top)│ B-initials (top)│   ← 16×16 square modules (top row)
+├─────────────────┼─────────────────┤
+│ A-score (bottom)│ B-score (bottom)│   ← 16×16 square modules (bottom row)
+├─────────────────┼─────────────────┤
+│ ● ● ●  A↑ A↓   │  B↑ B↓  ● ● ●  │   ← green LEDs + buttons (A) | buttons + red LEDs (B)
+└─────────────────┴─────────────────┘
+      Player A column                       Player B column
 ```
 
-- **P1 = red**, **P2 = green** (matches the two arcade buttons).
-- Centre LED stick: red LEDs fill from the left for P1 games won, green LEDs
-  fill from the right for P2 games won (up to 4 each).
-- Everything (scores, games, selected game) is saved automatically and survives
-  power-off or a flat battery.
+- **Player A = left column (2 squares) + green LEDs**, **Player B = right column (2 squares) + red LEDs**.
+- Green LEDs (left side) light up for each round Player A wins; red LEDs (right
+  side) light up for each round Player B wins.
+- Everything (scores, games won, player names, selected game) is saved
+  automatically and survives power-off or a flat battery.
 
 ---
 
-## 2. Controls — button cheat-sheet
+## 2. First-time setup
 
-There are only two buttons. What they do depends on a short tap, a long hold, or
-holding both.
+1. **Power on** using the slide switch on the side.
+2. On your phone, open Wi-Fi settings and connect to the network named
+   **`Scoreboard-XXXX`** (no password).
+3. A setup page should open automatically (captive portal). If it doesn't,
+   open a browser and visit **`http://192.168.4.1`**.
+4. On the setup page:
+   - Pick the **game** from the dropdown.
+   - Type **Player A's name** and **Player B's name** (the board shows each
+     player's initials).
+   - Tap **Apply**.
+5. The board immediately shows each player's initials and resets scores to 0.
 
-| Action | What it does (during play) |
-|---|---|
-| **Red — quick tap** | +1 point to Player 1 |
-| **Green — quick tap** | +1 point to Player 2 |
-| **Red — hold ~0.6 s** | **UNDO** the last point (step back; can undo many times) |
-| **Green — hold ~0.6 s** | **RESET** the match (scores + games back to 0) |
-| **Both buttons — hold ~2 s** | Open / close the **GAME MENU** |
-
-| In the GAME MENU | What it does |
-|---|---|
-| **Red — tap** | Highlight the next game (cycles through the 4) |
-| **Green — tap** | Select the highlighted game (starts it, scores reset to 0) |
-| **Both — hold ~2 s** | Close the menu without changing the game |
-
-> Undo is generous: it even reverses a point that *won* a round/game — the
-> games-won LED switches back off and the score returns to what it was. A reset
-> can also be undone (one step), in case you reset by mistake.
+Your settings are remembered after power-off — you only need to redo setup if
+you want to change the game or player names.
 
 ---
 
-## 3. The four games
+## 3. Scoring
 
-Switch games via the menu (hold both buttons ~2 s). Selecting a game clears the
-scores. Your choice is remembered after power-off.
+Each player has **two buttons**:
 
-### Table Tennis
-- First to **11 points wins the game**, but you must **win by 2**.
-- At 10–10 it continues until someone leads by two (e.g. 12–10, 13–11).
-- Winning a game lights one LED and resets the points to 0–0.
+| Button | What it does |
+|--------|-------------|
+| **UP** (Player A or B) | +1 point to that player (follows the sport's scoring rules) |
+| **DOWN** (Player A or B) | Removes one point from **that player only** — corrects a misclick |
 
-### Badminton
-- First to **21 points, win by 2**.
-- **Hard cap at 30:** if the score reaches 30, that point wins regardless of the
-  margin (e.g. 30–29).
-- Winning a game lights one LED and resets to 0–0.
-
-### Tennis
-- Points are shown the tennis way: **0 → 15 → 30 → 40 → game**.
-- **Deuce / advantage:** at 40–40 the screen shows `40`–`40` (deuce). The next
-  point shows **`AD`** (advantage) for that player. If they score again they win
-  the game; if the other player scores, it goes back to deuce.
-- Winning a game lights one LED. (Sets are not tracked — the LED column counts
-  games won, like the other modes.)
-
-  *Worked example:* P1 leads 40–30 and scores → P1 wins the game (LED +1).
-  Or: 40–40 (deuce) → P1 scores → `AD`–`40` → P1 scores → P1 wins. But if at
-  `AD`–`40` P2 scores, it returns to `40`–`40` deuce.
-
-### Free Count
-- Plain count-up, **no win rule** — just two tally counters.
-- Use **Green long-press (reset)** or re-select the game in the menu to clear it.
-
-### Pickleball
-- First to **11 points, win by 2** (rally scoring — every tap scores).
-
-### Volleyball
-- First to **25 points, win by 2**.
-
-### Basketball 21
-- Pickup/streetball style: first to **21 points, win by 2**.
-
-### Cornhole
-- First to **21 points, win by 2**. (The optional "bust back" rule is not
-  included — it's a simple count to 21.)
-
-### Reaction Game — the F1 start-light duel
-A real-time reflex game instead of a scoreboard. Open it from the menu (hold both
-buttons ~2 s, then cycle to the last entry, **"Reaction"**, and select with green).
-
-How a round works:
-1. The 5 LEDs light up **one by one**, F1-grid style (`READY` on the screens).
-2. After a short random wait, **all the lights go OUT** (`GO!` on the screens).
-3. The **first player to tap their button wins** — their reaction time in
-   milliseconds shows on their screen (e.g. `215`).
-4. **Jump start:** tap *before* the lights go out and you lose the round instantly
-   (your screen shows `JUMP`, the other player wins).
-5. The round winner lights one LED on the tally, then the **next round starts
-   automatically**.
-
-Hold **both buttons ~2 s** to leave the Reaction game and return to the menu.
-Reaction wins are a quick duel — they are **not** saved across power-off.
+- Each DOWN button affects **only its own player's** score; it never changes
+  the opponent's score. Press it as many times as needed (it stops at 0).
+- DOWN steps a normal point back (e.g. tennis 40 → 30). It does not reverse an
+  already-completed round win — fix a wrongly-awarded round from the web page's
+  **Reset** instead.
 
 ---
 
-## 4. Power & charging
+## 4. Match format and round indicators
+
+- Match is **Best of 3**: first player to win **2 rounds** wins the match.
+- A round ends when a player reaches the game's winning score (see §5).
+- Each round win lights the next LED on that player's side:
+  - Player A round wins → green LEDs (GPIOs 26 / 27 / 14, left to right).
+  - Player B round wins → red LEDs (GPIOs 4 / 16 / 17, left to right).
+- When a player wins their **2nd round** (match over), the **3rd LED on their
+  side blinks** to signal the match is complete.
+- To start a new match, use the setup page (reconnect to `Scoreboard-XXXX`),
+  pick a game and tap Apply — this resets scores and round wins to zero.
+
+---
+
+## 5. Games available
+
+Switch games via the setup page. Selecting a new game clears the scores. Your
+choice is remembered after power-off.
+
+| Game | Win rule |
+|------|----------|
+| **Table Tennis** | First to **11 points, win by 2** (deuce at 10–10) |
+| **Badminton** | First to **21 points, win by 2** (hard cap at 30) |
+| **Tennis** | Standard tennis scoring: 0 → 15 → 30 → 40 → game; deuce/advantage |
+| **Free Count** | Plain count-up, no win rule — two tally counters |
+| **Pickleball** | First to **11 points, win by 2** |
+| **Volleyball** | First to **25 points, win by 2** |
+| **Basketball 21** | First to **21 points, win by 2** |
+| **Cornhole** | First to **21 points, win by 2** |
+
+---
+
+## 6. Power & charging
 
 - **On / off:** the slide switch on the side is the master power switch.
 - **Charging:** plug a **USB-C** cable into the charge port (TP4056 module). It
   charges the internal 3.7 V lithium battery safely; unplug when full.
-- **Brightness:** a boost converter (MT3608) keeps the screens and LEDs at full
-  brightness even as the battery drains.
-- **Memory:** scores, games won, and the selected game are written to the ESP32's
-  flash (NVS) on every change, so turning the device off — or a dead battery —
-  never loses the score. (The undo history is the one exception: it clears on
-  power-off.)
+- **Brightness:** a boost converter (MT3608) keeps the matrix panels and LEDs at
+  full brightness even as the battery drains.
+- **Memory:** scores, games won, player names, and the selected game are written
+  to the ESP32's flash (NVS) on every change, so turning the device off — or a
+  dead battery — never loses the score.
 
 ---
 
-## 5. Running the simulation (no hardware needed)
+## 7. Flashing to hardware
 
-The whole device runs in a browser via Wokwi. See `simulation/README.md` for
-step-by-step instructions: paste `firmware/scoreboard.ino` and
-`simulation/diagram.json` into wokwi.com, **add `game_logic.h`, `game_logic.cpp`,
-`reaction.h`, and `reaction.cpp` as separate file tabs** (the build needs them),
-add the three Adafruit libraries, and press Play. Click the on-screen red/green
-buttons to play; hold a button (click and keep held) for long-press actions.
-
-## 6. Flashing to real hardware
-
-1. Arduino IDE → install the **ESP32** board package and the libraries:
-   *Adafruit GFX*, *Adafruit ILI9341*, *Adafruit NeoPixel*.
-2. Keep `scoreboard.ino`, `game_logic.h` / `game_logic.cpp`, and
-   `reaction.h` / `reaction.cpp` together in the same sketch folder (the sketch
-   needs all the core files beside it).
+1. Arduino IDE → install the **ESP32** board package and **one** library:
+   - **Adafruit GFX Library** — via Arduino Library Manager (search "Adafruit GFX").
+   - **Max72xxPanel** by Mark Ruys (BSD) is **bundled with the project**
+     (`firmware/Max72xxPanel.h` / `.cpp`) — no separate install needed.
+   *(MD_Parola and MD_MAX72xx are no longer used.)*
+2. Keep `scoreboard.ino` and all `.h` / `.cpp` files (including the bundled
+   `Max72xxPanel.*`) together in the same sketch folder.
 3. Wire everything per `wiring/wiring_table.md`.
 4. Select **"ESP32 Dev Module"**, choose the COM port, and **Upload**.
-5. Print the case: open `enclosure/scoreboard_case.scad` in OpenSCAD, set
-   `PART="tray"` then `PART="faceplate"`, export each as STL, and print.
+5. Print the case: open `enclosure/scoreboard_case.scad` (Rev F) in OpenSCAD,
+   set `PART="tray"` then `PART="faceplate"`, export each as STL, and print.
 
 ---
 
-## 7. Customising (simple code tweaks)
+## 7a. Mechanical assembly
 
-| What | Where | Default |
-|---|---|---|
-| Player initials shown on screen | `INITIALS_A` / `INITIALS_B` in `scoreboard.ino` | `"P1"` / `"P2"` |
-| Long-press time (undo/reset) | `LONG_PRESS_MS` in `scoreboard.ino` | `600` ms |
-| Menu open/close hold time | `MENU_HOLD_MS` in `scoreboard.ino` | `2000` ms |
-| Any sport's win score / cap | the `GAMES[]` table in `game_logic.cpp` (`winScore`, `hardCap` columns) | e.g. Table Tennis `11, 0`; Badminton `21, 30` |
-| Reaction countdown speed | `COUNTDOWN_STEP_MS` in `reaction.h` | `1000` ms per light |
-| Reaction random wait range | `HOLD_MIN_MS` / `HOLD_MAX_MS` in `reaction.h` | `1000`–`3000` ms |
-| Reaction result display time | `RESULT_MS` in `reaction.h` | `2500` ms |
+Print orientation: print both parts on their flat outer face (the bottom edge
+has a small chamfer to avoid "elephant's foot"). PETG recommended for a
+portable/outdoor unit.
 
-After any change, re-upload the sketch (or re-run the Wokwi simulation).
+1. **Heat-set inserts:** press an **M3 brass insert** into each of the 4 tray
+   corner bosses with a soldering iron (the 4.0 mm bores are sized for them).
+   *(No inserts? Set `USE_HEATSET = false` in the `.scad` and re-export — the
+   bores become 2.6 mm for self-tapping M3 screws.)*
+2. **Boards:** mount the **ESP32** on the central 2×2 floor standoffs and the
+   **TP4056 / MT3608** on the lower standoffs (M2.5/M3 self-tap). Confirm your
+   exact board hole spacing against the `PCB_POSTS` positions in the `.scad`
+   first — adjust if needed before printing.
+3. **Matrices:** drop each **16×16 module** into its locating frame behind the
+   matching faceplate window (initials top, score bottom; A left, B right).
+   The module is captured by the window edge; the frame keeps it centred.
+4. **LEDs & buttons:** push the 6 LEDs and 4 buttons into their chamfered
+   faceplate holes; wire per `wiring/wiring_table.md`.
+5. **Close up:** seat the faceplate — its registration lip self-aligns into the
+   tray — and fasten with the 4 **M3 × 8 mm** screws (heads sit flush in the
+   counterbores). The USB-C port lines up with the side cut-out.
 
 ---
 
 ## 8. Troubleshooting
 
 | Symptom | Check |
-|---|---|
-| A screen stays black | Confirm that screen's **CS** wire and the shared **SCK / MOSI / DC** wires match `wiring/wiring_table.md`. (RST/LED aren't used in the Wokwi simulation — that's normal.) |
-| Buttons do nothing | Buttons wire to GPIO + GND with internal pull-ups; a quick tap scores, a ~0.6 s hold is undo/reset. |
-| Score reset itself on its own | That's a game win (e.g. table tennis 11) — the points reset to 0–0 and a games-won LED lights. |
-| Wrong game on power-up | The device remembers the last selected game; open the menu (hold both) and pick another. |
-| Score didn't save after power-off | Scores save on every change; undo history is intentionally not saved across power-off. |
+|---------|-------|
+| Matrix panel stays blank | Confirm CLK (GPIO 18), DIN (GPIO 23), and CS (GPIO 5) wires match `wiring/wiring_table.md`. Check daisy-chain: mod 1 DOUT → mod 2 DIN → mod 3 DIN → mod 4 DIN. |
+| Wrong content on wrong square | Check module order: mod 1 = A-initials (top-left), mod 2 = A-score (bottom-left), mod 3 = B-initials (top-right), mod 4 = B-score (bottom-right). |
+| Buttons do nothing | Buttons wire to GPIO + GND with internal pull-ups. Check that the correct GPIO is used (A-up=32, A-down=33, B-up=25, B-down=13). |
+| Score reset itself on its own | That's a round win (e.g. table tennis at 11) — points reset to 0–0 and a round LED lights. |
+| Setup page doesn't open | Connect to `Scoreboard-XXXX` Wi-Fi, then manually navigate to `http://192.168.4.1`. |
+| Settings lost after power-off | Scores save on every change via NVS. If this happens, the flash write may have failed — re-flash the firmware. |
+| 3rd LED blinking | Match is over — that player won the Best-of-3. Start a new match via the setup page. |
 
 ---
 
-*Built for Swapna. Firmware by Rohit Jangra — ESP32, four ILI9341 displays,
-WS2812B LED stick, all logic unit-tested.*
+*Built for Swapna. Firmware by Rohit Jangra — ESP32, 4× MAX7219 16×16 square
+matrix modules, 6 round-indicator LEDs, all logic unit-tested.*
