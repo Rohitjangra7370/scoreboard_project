@@ -119,8 +119,33 @@ choice is remembered after power-off.
    `Max72xxPanel.*`) together in the same sketch folder.
 3. Wire everything per `wiring/wiring_table.md`.
 4. Select **"ESP32 Dev Module"**, choose the COM port, and **Upload**.
-5. Print the case: open `enclosure/scoreboard_case.scad` (Rev E) in OpenSCAD,
+5. Print the case: open `enclosure/scoreboard_case.scad` (Rev F) in OpenSCAD,
    set `PART="tray"` then `PART="faceplate"`, export each as STL, and print.
+
+---
+
+## 7a. Mechanical assembly
+
+Print orientation: print both parts on their flat outer face (the bottom edge
+has a small chamfer to avoid "elephant's foot"). PETG recommended for a
+portable/outdoor unit.
+
+1. **Heat-set inserts:** press an **M3 brass insert** into each of the 4 tray
+   corner bosses with a soldering iron (the 4.0 mm bores are sized for them).
+   *(No inserts? Set `USE_HEATSET = false` in the `.scad` and re-export — the
+   bores become 2.6 mm for self-tapping M3 screws.)*
+2. **Boards:** mount the **ESP32** on the central 2×2 floor standoffs and the
+   **TP4056 / MT3608** on the lower standoffs (M2.5/M3 self-tap). Confirm your
+   exact board hole spacing against the `PCB_POSTS` positions in the `.scad`
+   first — adjust if needed before printing.
+3. **Matrices:** drop each **16×16 module** into its locating frame behind the
+   matching faceplate window (initials top, score bottom; A left, B right).
+   The module is captured by the window edge; the frame keeps it centred.
+4. **LEDs & buttons:** push the 6 LEDs and 4 buttons into their chamfered
+   faceplate holes; wire per `wiring/wiring_table.md`.
+5. **Close up:** seat the faceplate — its registration lip self-aligns into the
+   tray — and fasten with the 4 **M3 × 8 mm** screws (heads sit flush in the
+   counterbores). The USB-C port lines up with the side cut-out.
 
 ---
 

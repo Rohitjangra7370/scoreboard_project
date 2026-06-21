@@ -89,10 +89,11 @@ These keep the build reliable; quantities are per unit.
 
 | # | Item | Spec | Qty | Notes |
 |---|------|------|-----|-------|
-| 16 | Case — tray + faceplate | 3D print from `enclosure/scoreboard_case.scad` Rev E (export `tray.stl` + `faceplate.stl`) | 1 set | A4 footprint. Faceplate has 4 square ~68 mm windows in a 2×2 grid (top row: A-initials left, B-initials right; bottom row: A-score left, B-score right), plus 6 LED holes and 4 button holes below each player's column. USB-C charge port cut-out on side. |
+| 16 | Case — tray + faceplate | 3D print from `enclosure/scoreboard_case.scad` Rev F (export `tray.stl` + `faceplate.stl`) | 1 set | A4 footprint. Faceplate: 4 square ~68 mm windows in a 2×2 grid (top: A/B initials; bottom: A/B score), 6 LED + 4 button holes (chamfered), a registration lip that nests into the tray, and locating frames behind each window. Tray: 4 heat-set corner bosses, 6 PCB standoffs, USB-C cut-out. |
 | 17 | Filament | PLA or PETG (PETG if heat/impact matters) | ~150–250 g | For both parts. |
-| 18 | Screws | **M3 × ~8 mm** | 4 | Faceplate → tray, into the 4 screw bosses. |
-| 19 | Heat-set inserts *(optional)* | M3 brass | 4 | Cleaner threads than screwing straight into plastic. |
+| 18 | **M3 heat-set inserts** (brass) | M3 × ~4 mm | 4 | Press into the 4 tray corner bosses (bores are sized 4.0 mm for these). Gives durable threads. |
+| 19 | **M3 × 8 mm** machine screws | countersunk/pan | 4 | Faceplate → tray. Heads sit flush in the counterbored faceplate holes. |
+| 20 | **M2.5/M3 self-tap** screws *(optional)* | × ~4 mm | 4–6 | Fix the ESP32 + power boards onto the tray-floor standoffs (self-tap into the 2.6 mm bores). |
 
 ---
 

@@ -29,7 +29,7 @@ enclosure/   scoreboard_case.scad  parametric 3D-printable case (A4, 2 parts)
 - **Non-volatile memory (NVS):** scores, round wins, player names, and selected game survive power-off / dead battery.
 - **Full undo:** DOWN button steps back through scoring history, including across round boundaries.
 - Power chain spec'd: LiPo → TP4056 USB-C charge → MT3608 5V boost → SPDT master switch.
-- Custom A4 enclosure (tray + faceplate, Rev E) with 4 square ~68 mm windows in a 2×2 grid (top row: A-initials left, B-initials right; bottom row: A-score left, B-score right), plus 6 LED holes, 4 button holes below each player's column, and USB-C charge port cut-out.
+- Custom A4 enclosure (tray + faceplate, Rev F) with 4 square ~68 mm windows in a 2×2 grid (top row: A-initials left, B-initials right; bottom row: A-score left, B-score right), plus 6 LED holes, 4 button holes below each player's column, and USB-C charge port cut-out.
 
 ## How to run the simulation
 See `simulation/README.md` — paste the sketch + diagram into wokwi.com, press
@@ -44,7 +44,7 @@ Play. Click the on-screen buttons to score.
    same sketch folder.
 3. Wire per `wiring/wiring_table.md` (4 modules daisy-chained on GPIO 18/23/5).
 4. Select "ESP32 Dev Module", upload `scoreboard.ino`.
-5. Open `enclosure/scoreboard_case.scad` (Rev E) in OpenSCAD, set `PART="tray"` then `PART="faceplate"`, export each as STL, print.
+5. Open `enclosure/scoreboard_case.scad` (Rev F) in OpenSCAD, set `PART="tray"` then `PART="faceplate"`, export each as STL, print.
 
 ## Optional future add-ons (not in this order)
 - Remote scoreboard view via phone browser (the ESP32 Wi-Fi is already active).
