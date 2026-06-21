@@ -150,7 +150,7 @@ module faceplate() {
 
         // ---- USB-C slot (right edge, matches tray cutout) ------------------
         translate([A4_W - WALL - 1, A4_H / 2 - USB_W / 2, -1])
-            cube([WALL + 2, USB_W, FACE + 2]);
+            cube([WALL + 2, USB_W, USB_H + 2]);
 
         // ---- M3 screw holes (match tray boss positions) --------------------
         for (x = [INSET, A4_W - INSET], y = [INSET, A4_H - INSET])
