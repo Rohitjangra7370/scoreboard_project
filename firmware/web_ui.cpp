@@ -31,11 +31,34 @@ button{width:100%;padding:.8em;margin-top:1em;font-size:1.05em;border:0;border-r
 <label>Player B name</label><input id=b maxlength=16 placeholder="Player B">
 <button onclick="apply()">Apply</button>
 <button id=reset onclick="rst()">Reset match</button>
+<p id=msg style="margin:.8em 0;min-height:1.2em;color:#2d7"></p>
 <div class=s><div id=sa>-</div><div id=sb>-</div></div>
+<p style="font-size:.8em;color:#888">Buttons not responding? Open
+<b>http://192.168.4.1</b> in a normal Chrome/Safari tab — not the auto sign-in
+popup (it blocks the page's scripts).</p>
 <script>
-function apply(){fetch('/config?game='+game.value+'&a='+encodeURIComponent(a.value)+'&b='+encodeURIComponent(b.value))}
-function rst(){fetch('/reset')}
-setInterval(function(){fetch('/state').then(r=>r.json()).then(j=>{sa.textContent=j.a+' ['+j.ga+']';sb.textContent=j.b+' ['+j.gb+']'})},1000)
+function $(i){return document.getElementById(i)}
+function msg(t,err){var m=$('msg');m.textContent=t;m.style.color=err?'#f66':'#2d7'}
+var FAIL='Could not reach the board. Open http://192.168.4.1 in a normal browser tab.';
+function apply(){
+  msg('Applying...');
+  fetch('/config?game='+$('game').value+'&a='+encodeURIComponent($('a').value)+'&b='+encodeURIComponent($('b').value))
+    .then(function(r){return r.text()})
+    .then(function(){msg('Applied — board updated.')})
+    .catch(function(){msg(FAIL,1)});
+}
+function rst(){
+  msg('Resetting...');
+  fetch('/reset')
+    .then(function(r){return r.text()})
+    .then(function(){msg('Match reset.')})
+    .catch(function(){msg(FAIL,1)});
+}
+setInterval(function(){
+  fetch('/state').then(function(r){return r.json()}).then(function(j){
+    $('sa').textContent=j.a+' ['+j.ga+']'; $('sb').textContent=j.b+' ['+j.gb+']';
+  }).catch(function(){});
+},1000);
 </script></body></html>
 )HTML";
 
