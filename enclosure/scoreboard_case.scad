@@ -119,10 +119,13 @@ module hole_chamfered(d, thickness, z_top) {
         cylinder(d1 = d, d2 = d + 2 * CHAMFER_HOLE, h = CHAMFER_HOLE + 0.01);
 }
 
-// Counterbored screw hole through the faceplate (head flush on the top face).
+// Counterbored screw hole through the faceplate. The OUTER (visible) face is
+// z=0; the lip + matrix frames are on the INNER face (z=FACE) that goes into
+// the tray. So the head counterbore opens on the OUTER face → heads sit flush
+// on the visible side, threads reach down into the tray bosses.
 module faceplate_screw() {
-    translate([0, 0, -1]) cylinder(d = SCREW_CLR, h = FACE + 2);      // shank
-    translate([0, 0, FACE - HEAD_H]) cylinder(d = HEAD_D, h = HEAD_H + 1); // head
+    translate([0, 0, -1]) cylinder(d = SCREW_CLR, h = FACE + 2);          // shank through
+    translate([0, 0, -0.01]) cylinder(d = HEAD_D, h = HEAD_H + 0.01);     // head on outer face (z=0)
 }
 
 // Square matrix window centred at (cx, cy).
@@ -235,7 +238,11 @@ module faceplate() {
 // ---------------------------------------------------------------------------
 if (PART == "tray")           tray();
 else if (PART == "faceplate") faceplate();
-else {                         // preview: faceplate floating above tray
+else {  // exploded preview: faceplate flipped into assembled orientation above
+        // the tray — outer face up, registration lip + matrix frames pointing
+        // DOWN into the open tray (the way it actually drops on).
     tray();
-    translate([0, 0, CAVITY_H + 14]) color("LightGrey") faceplate();
+    translate([0, A4_H, CAVITY_H + 18])
+        rotate([180, 0, 0])
+            color("LightGrey") faceplate();
 }
