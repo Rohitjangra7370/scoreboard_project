@@ -8,18 +8,59 @@ Pin assignments for every part are in `wiring/wiring_table.md`.
 
 ---
 
+## Quick cost summary (USA, single unit, approx.)
+
+Prices are typical US street prices as of June 2026 (Amazon / Adafruit /
+SparkFun), single-quantity. Many parts ship in multipacks, so the **per-unit**
+cost drops if you build more than one. Prices marked *(kit)* come from a parts
+assortment you likely already have or buy once.
+
+| Part | Qty | Approx. unit | Line total | Where to buy (US) |
+|------|-----|--------------|-----------|--------------|
+| ESP32-WROOM-32 dev board | 1 | $8 | $8 | [Amazon – HiLetgo/ESP-WROOM-32](https://www.amazon.com/ESP-WROOM-32-Development-Microcontroller-Integrated-Compatible/dp/B08D5ZD528) |
+| MAX7219 8×32 dot-matrix module (4-in-1, FC16) | 2 | $7 | $14 | [Amazon – MAX7219 FC16 4-in-1](https://www.amazon.com/s?k=MAX7219+8x32+dot+matrix+FC16) |
+| 5 mm LED — green (Player A round indicators) | 3 | *(kit)* | ~$0.50 | [Amazon (LED assortment kit)](https://www.amazon.com/s?k=5mm+LED+assortment+kit) |
+| 5 mm LED — red (Player B round indicators) | 3 | *(kit)* | ~$0.50 | [Amazon (LED assortment kit)](https://www.amazon.com/s?k=5mm+LED+assortment+kit) |
+| 220 Ω resistor | 6 | *(kit)* | ~$0.50 | [Amazon (resistor kit)](https://www.amazon.com/s?k=resistor+assortment+kit) |
+| Momentary push button (6×6 mm tactile or panel-mount) | 4 | *(kit)* | ~$1 | [Amazon (tactile button kit)](https://www.amazon.com/s?k=momentary+push+button+assortment) |
+| SPDT slide switch | 1 | $1 | $1 | [Amazon (multipack)](https://www.amazon.com/s?k=SPDT+slide+switch) |
+| 3.7 V LiPo 1200–2000 mAh | 1 | $9 | $9 | [Adafruit 1200 mAh LiPo](https://www.adafruit.com/product/258) |
+| TP4056 USB-C (w/ protection) | 1 | $2 | $2 | [Amazon – HiLetgo TP4056 Type-C](https://www.amazon.com/HiLetgo-Lithium-Charging-Protection-Functions/dp/B07PKND8KG) |
+| MT3608 boost converter | 1 | $1.50 | $1.50 | [Amazon – MT3608](https://www.amazon.com/MT3608-Module-Type-C-2V-24V-TP4056/dp/B0DZ1K4B7G) |
+| Passives (capacitor, extra resistors) | — | — | ~$0.50 | [Amazon (kit)](https://www.amazon.com/s?k=electronics+component+assortment+kit) |
+| Hook-up wire, headers, protoboard | — | — | ~$8 | [Amazon (kit, reusable)](https://www.amazon.com/s?k=22+awg+hookup+wire+protoboard+kit) |
+| 3D-print filament (PLA/PETG) | ~200 g | — | ~$5 | [Amazon](https://www.amazon.com/s?k=PLA+filament+1.75mm) · MatterHackers |
+| M3 screws (+ optional inserts) | 4 | — | ~$1 | [Amazon (kit)](https://www.amazon.com/s?k=M3+screw+assortment+kit) |
+| **Core electronics only** | | | **≈ $38** | |
+| **Full build (incl. wire/print/extras)** | | | **≈ $52–62** | |
+
+*Direct product links are US sellers (Amazon US / Adafruit). "Kit" rows use a
+search link since the exact pack you pick doesn't matter — any assortment works.*
+
+**Sourcing notes:**
+- **Amazon** — cheapest + fastest for most parts; brands like HiLetgo are reliable.
+- **Adafruit / SparkFun** — slightly pricier but verified specs + good docs; best for the LiPo.
+- **DigiKey / Mouser** — use if you need an exact part number or buy in volume.
+
+The detailed engineering tables below list every part with its exact spec, pin
+role, and build cautions.
+
+---
+
 ## 1. Core electronics
 
 | # | Component | Spec / part | Qty | Notes |
 |---|-----------|-------------|-----|-------|
-| 1 | Microcontroller | **ESP32-WROOM-32** dev board (30/38-pin) | 1 | The brain. Drives all 4 displays over one SPI bus + reads buttons. Wi-Fi/BLE capable. |
-| 2 | Display | **2.4" ILI9341 TFT LCD, SPI** (240×320) | 4 | Player A initials + score, Player B score + initials. Shared SCLK/MOSI/DC/RST, separate CS each. |
-| 3 | RGB LED stick | **WS2812B "NeoPixel", 8 LEDs** | 1 | Centre column: games-won tally + F1 reaction-game start lights. |
-| 4 | Buttons | **30 mm arcade button** (1× red, 1× green) | 2 | Score / control inputs. Momentary, normally-open. |
-| 5 | Power switch | **SPDT slide switch** (heavy-duty) | 1 | Master on/off. Wire on the TP4056 **OUT+** rail (see wiring §4). |
-| 6 | Battery | **3.7 V Li-ion / LiPo**, ~1200–2000 mAh | 1 | Portable power. Single cell. |
-| 7 | Charge controller | **TP4056, USB-C** charging module (with protection) | 1 | Safe USB-C LiPo charging + over-discharge protection. |
-| 8 | Boost converter | **MT3608** step-up (set to 5 V out) | 1 | Boosts 3.7 V → steady 5 V so screens/LEDs never dim. Set the trimpot to 5.0 V before connecting. |
+| 1 | Microcontroller | **ESP32-WROOM-32** dev board (30/38-pin) | 1 | The brain. Drives both dot-matrix panels over one SPI chain + reads buttons + drives indicator LEDs. Wi-Fi capable (used for the setup portal). |
+| 2 | Dot-matrix display | **MAX7219 8×32 LED dot-matrix module** (4-in-1, FC16 generic) | 2 | One per player — shows that player's initials + live score. Panels are daisy-chained on one SPI chain (8 modules total). Powered from the 5 V rail. |
+| 3 | Round-indicator LED (green) | **5 mm LED, green** | 3 | Player A games-won tally (one LED per round). Series 220 Ω resistor each. |
+| 4 | Round-indicator LED (red) | **5 mm LED, red** | 3 | Player B games-won tally (one LED per round). Series 220 Ω resistor each. |
+| 5 | Current-limiting resistor | **220 Ω**, ¼ W | 6 | One in series per LED (GPIOs 26, 27, 14, 4, 16, 17 → resistor → LED → GND). |
+| 6 | Buttons | **Momentary push button** (normally-open) | 4 | Two per player: UP (+1 point) and DOWN (undo). |
+| 7 | Power switch | **SPDT slide switch** (heavy-duty) | 1 | Master on/off. Wire on the TP4056 **OUT+** rail (see wiring §4). |
+| 8 | Battery | **3.7 V Li-ion / LiPo**, ~1200–2000 mAh | 1 | Portable power. Single cell. |
+| 9 | Charge controller | **TP4056, USB-C** charging module (with protection) | 1 | Safe USB-C LiPo charging + over-discharge protection. |
+| 10 | Boost converter | **MT3608** step-up (set to 5 V out) | 1 | Boosts 3.7 V → steady 5 V for the matrix panels and ESP32. Set the trimpot to 5.0 V before connecting. |
 
 ---
 
@@ -29,12 +70,10 @@ These keep the build reliable; quantities are per unit.
 
 | # | Item | Spec | Qty | Notes |
 |---|------|------|-----|-------|
-| 9  | Resistor | **330–470 Ω**, ¼ W | 1 | In series on the WS2812B `DIN` data line (GPIO25). |
-| 10 | Capacitor | **1000 µF**, ≥6.3 V electrolytic | 1 | Across the 5 V rail near the LED stick (inrush smoothing). |
-| 11 | Level shifter *(optional)* | **74AHCT125** (or similar) | 1 | Only if the LEDs glitch — shifts 3.3 V data → 5 V. Often not needed for the first pixel. |
-| 12 | Hook-up wire | 24–26 AWG, silicone | — | Display/button/power wiring. |
+| 11 | Capacitor | **1000 µF**, ≥6.3 V electrolytic | 1 | Across the 5 V rail (inrush smoothing for the matrix panels). |
+| 12 | Hook-up wire | 24–26 AWG, silicone | — | Button/LED/power wiring. |
 | 13 | Protoboard or PCB | Perfboard, ~5×7 cm | 1 | To mount the ESP32 + TP4056 + MT3608 + junctions. |
-| 14 | Pin headers / DuPont | 2.54 mm | — | For the dev board + display connections (optional, can solder direct). |
+| 14 | Pin headers / DuPont | 2.54 mm | — | For the dev board + module connections (optional, can solder direct). |
 | 15 | USB-C cable | Standard | 1 | Charging (usually user-supplied). |
 
 ---
@@ -43,7 +82,7 @@ These keep the build reliable; quantities are per unit.
 
 | # | Item | Spec | Qty | Notes |
 |---|------|------|-----|-------|
-| 16 | Case — tray + faceplate | 3D print from `enclosure/scoreboard_case.scad` (export `tray.stl` + `faceplate.stl`) | 1 set | A4 footprint, cutouts for 4 screens, the LED column, 2 buttons, USB-C port. |
+| 16 | Case — tray + faceplate | 3D print from `enclosure/scoreboard_case.scad` (export `tray.stl` + `faceplate.stl`) | 1 set | A4 footprint, cutouts for both matrix panels, 6 round-indicator LEDs, 4 buttons, USB-C port. |
 | 17 | Filament | PLA or PETG (PETG if heat/impact matters) | ~150–250 g | For both parts. |
 | 18 | Screws | **M3 × ~8 mm** | 4 | Faceplate → tray, into the 4 screw bosses. |
 | 19 | Heat-set inserts *(optional)* | M3 brass | 4 | Cleaner threads than screwing straight into plastic. |
@@ -55,24 +94,22 @@ These keep the build reliable; quantities are per unit.
 All parts are common and stocked in the USA (Amazon, Adafruit, SparkFun, Micro
 Center, DigiKey, Mouser). Read these before ordering:
 
-- **⚠️ Displays — buy the SPI version, NOT parallel.** The ILI9341 is sold in two
-  interfaces. This project uses **SPI** (a small ~9–14-pin header: VCC, GND, CS,
-  RST, DC, SDI/MOSI, SCK, LED, SDO/MISO). The common cheap "red 2.4″" board is
-  usually the **8-bit parallel** type (40-pin) and will **not** work with this
-  firmware. When ordering, confirm the listing says **"SPI"** and shows the
-  9–14-pin header.
-- **NeoPixel stick:** any **WS2812B** (or **SK6812** — same protocol/brightness)
-  8-LED stick works with the `Adafruit NeoPixel` library. Adafruit's own stick now
-  ships as SK6812; clones are typically WS2812B. Either is fine.
-- **Logic levels:** everything runs at 3.3 V except the WS2812B data line (5 V part
-  driven by 3.3 V GPIO) — see the data-line note in `wiring_table.md`.
-- **⚠️ Display power:** four TFT backlights pulling from the ESP32 dev board's
-  on-board 3.3 V regulator is marginal and can run hot. For a reliable build, feed
-  the four displays' VCC from a **dedicated 3.3 V supply** (a small AMS1117-3.3 or
-  buck module off the 5 V rail) rather than the ESP32's 3V3 pin.
-- **Boost sizing:** keep the MT3608 set to 5.0 V; total peak load (4 displays +
-  ESP32 + LEDs) is roughly ≤1 A with the LED brightness used in firmware, within a
-  typical MT3608's range. If you raise LED brightness a lot, size the boost up.
+- **MAX7219 matrix modules:** use the **FC16 4-in-1 generic module** (the wide
+  8×32 panel with a MAX7219 driver IC). These are widely available on Amazon.
+  Each module is powered from the 5 V rail; the SPI data lines operate at 3.3 V
+  and are accepted by the MAX7219 without a level shifter in practice.
+- **LEDs:** any standard 5 mm through-hole green/red LED works. The 220 Ω
+  resistor limits current to ~10–15 mA from a 3.3 V GPIO — safe and bright
+  enough for indoor use.
+- **Buttons:** any normally-open momentary push button (6×6 mm tactile or
+  panel-mount style) works. Firmware uses internal pull-ups; no external
+  resistor needed.
+- **Logic levels:** the ESP32 GPIOs output 3.3 V; the MAX7219 DIN input
+  typically accepts this reliably. If displays show noise/corruption, add a
+  small pull-down (10 kΩ) on CS when de-asserted.
+- **Boost sizing:** the MT3608 set to 5.0 V handles the two matrix panels +
+  ESP32 comfortably (peak load well under 1 A). Keep it set to exactly 5.0 V
+  before wiring.
 - **TP4056:** order the **USB-C** variant **with battery protection** (some bare
   modules omit it).
 
