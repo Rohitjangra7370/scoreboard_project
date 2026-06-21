@@ -36,10 +36,12 @@ See `simulation/README.md` — paste the sketch + diagram into wokwi.com, press
 Play. Click the on-screen buttons to score.
 
 ## To flash on real hardware
-1. Arduino IDE → install ESP32 boards, then install these two libraries:
+1. Arduino IDE → install ESP32 boards, then install **one** library:
    - **Adafruit GFX Library** via Arduino Library Manager.
-   - **Max72xxPanel** by Mark Ruys from [github.com/markruys/arduino-Max72xxPanel](https://github.com/markruys/arduino-Max72xxPanel) (Sketch → Include Library → Add .ZIP Library).
-2. Keep all `.ino`, `.h`, and `.cpp` files in the same sketch folder.
+   - **Max72xxPanel** by Mark Ruys (BSD) is **bundled** in the project
+     (`firmware/Max72xxPanel.h` / `.cpp`) — no separate install.
+2. Keep all `.ino`, `.h`, and `.cpp` files (including `Max72xxPanel.*`) in the
+   same sketch folder.
 3. Wire per `wiring/wiring_table.md` (4 modules daisy-chained on GPIO 18/23/5).
 4. Select "ESP32 Dev Module", upload `scoreboard.ino`.
 5. Open `enclosure/scoreboard_case.scad` (Rev E) in OpenSCAD, set `PART="tray"` then `PART="faceplate"`, export each as STL, print.

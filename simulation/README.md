@@ -14,13 +14,13 @@ No physical hardware needed. Two ways to run.
    - `indicators.h`, `indicators.cpp`
    - `input.h`, `input.cpp`
    - `web_ui.h`, `web_ui.cpp`
+   - `Max72xxPanel.h`, `Max72xxPanel.cpp` (bundled in `firmware/` — this library
+     isn't in the Arduino registry, so it ships with the project)
 4. Open the `diagram.json` tab, select-all, paste the contents of this folder's
    `diagram.json`.
-5. Add the libraries:
-   - `Adafruit GFX Library` (Library Manager "+")
-   - `Max72xxPanel` — not in the Library Manager; add it from
-     https://github.com/markruys/arduino-Max72xxPanel (download ZIP → add as a
-     library, or copy `Max72xxPanel.h/.cpp` in as tabs).
+5. Add the **one** registry library via the Library Manager "+":
+   - `Adafruit GFX Library`
+   (Max72xxPanel needs no install — it's the source tabs you added in step 3.)
 6. Press **▶ Play**.
 
 ## Option B — VS Code + Wokwi extension
@@ -55,6 +55,7 @@ No physical hardware needed. Two ways to run.
   the first two letters. Defaults persist in NVS.
 - Pins (see `wiring/wiring_table.md`): matrix chain CLK=18, DIN=23, CS=5;
   buttons 32/33 (A up/down), 25/13 (B up/down); LEDs 26/27/14 (A), 4/16/17 (B).
-- Libraries: `Adafruit GFX Library` + `Max72xxPanel`. The old `MD_Parola` /
-  `MD_MAX72xx` / `Adafruit ILI9341` / `Adafruit NeoPixel` stacks are **no longer
-  used**.
+- Libraries: `Adafruit GFX Library` (from the Library Manager) +
+  `Max72xxPanel` (BSD, bundled in `firmware/` — no install). The old
+  `MD_Parola` / `MD_MAX72xx` / `Adafruit ILI9341` / `Adafruit NeoPixel` stacks
+  are **no longer used**.

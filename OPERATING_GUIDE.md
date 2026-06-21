@@ -110,14 +110,13 @@ choice is remembered after power-off.
 
 ## 7. Flashing to hardware
 
-1. Arduino IDE → install the **ESP32** board package and the following libraries:
+1. Arduino IDE → install the **ESP32** board package and **one** library:
    - **Adafruit GFX Library** — via Arduino Library Manager (search "Adafruit GFX").
-   - **Max72xxPanel** by Mark Ruys — download from
-     [github.com/markruys/arduino-Max72xxPanel](https://github.com/markruys/arduino-Max72xxPanel)
-     and install via Sketch → Include Library → Add .ZIP Library.
+   - **Max72xxPanel** by Mark Ruys (BSD) is **bundled with the project**
+     (`firmware/Max72xxPanel.h` / `.cpp`) — no separate install needed.
    *(MD_Parola and MD_MAX72xx are no longer used.)*
-2. Keep `scoreboard.ino` and all `.h` / `.cpp` files together in the same
-   sketch folder.
+2. Keep `scoreboard.ino` and all `.h` / `.cpp` files (including the bundled
+   `Max72xxPanel.*`) together in the same sketch folder.
 3. Wire everything per `wiring/wiring_table.md`.
 4. Select **"ESP32 Dev Module"**, choose the COM port, and **Upload**.
 5. Print the case: open `enclosure/scoreboard_case.scad` (Rev E) in OpenSCAD,

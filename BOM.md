@@ -101,9 +101,9 @@ Center, DigiKey, Mouser). Read these before ordering:
   the SPI data lines operate at 3.3 V and are accepted by the MAX7219 without
   a level shifter in practice.
 - **Libraries:** firmware uses **Adafruit GFX Library** (install via Arduino
-  Library Manager) and **Max72xxPanel** by Mark Ruys (install from
-  github.com/markruys/arduino-Max72xxPanel). MD_Parola / MD_MAX72xx are no
-  longer used.
+  Library Manager). **Max72xxPanel** by Mark Ruys (BSD) is bundled in the
+  project (`firmware/Max72xxPanel.*`) — no separate install. MD_Parola /
+  MD_MAX72xx are no longer used.
 - **LEDs:** any standard 5 mm through-hole green/red LED works. The 220 Ω
   resistor limits current to ~10–15 mA from a 3.3 V GPIO — safe and bright
   enough for indoor use.
