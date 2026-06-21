@@ -1,9 +1,12 @@
 {
   "version": 1, "author": "Rohit Jangra", "editor": "wokwi",
+  "_note": "4x 16x16 square matrices. Wokwi's max7219-matrix models a horizontal 8xN strip, so each 16x16 is approximated here by a chain=4 strip; the real square (2x2 tile) layout + Max72xxPanel mapping only verify on hardware.",
   "parts": [
     { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0 },
-    { "type": "wokwi-max7219-matrix", "id": "mA", "top": -100, "left": -160, "attrs": { "chain": "4", "layout": "fc16" } },
-    { "type": "wokwi-max7219-matrix", "id": "mB", "top": -100, "left": 160,  "attrs": { "chain": "4", "layout": "fc16" } },
+    { "type": "wokwi-max7219-matrix", "id": "mAi", "top": -180, "left": -160, "attrs": { "chain": "4", "layout": "fc16" } },
+    { "type": "wokwi-max7219-matrix", "id": "mAs", "top": -120, "left": -160, "attrs": { "chain": "4", "layout": "fc16" } },
+    { "type": "wokwi-max7219-matrix", "id": "mBi", "top": -180, "left": 160,  "attrs": { "chain": "4", "layout": "fc16" } },
+    { "type": "wokwi-max7219-matrix", "id": "mBs", "top": -120, "left": 160,  "attrs": { "chain": "4", "layout": "fc16" } },
     { "type": "wokwi-pushbutton", "id": "bAu", "top": 120, "left": -200, "attrs": { "color": "green" } },
     { "type": "wokwi-pushbutton", "id": "bAd", "top": 120, "left": -120, "attrs": { "color": "red" } },
     { "type": "wokwi-pushbutton", "id": "bBu", "top": 120, "left": 120,  "attrs": { "color": "green" } },
@@ -16,10 +19,14 @@
     { "type": "wokwi-led", "id": "lb3", "top": 200, "left": 200,  "attrs": { "color": "red" } }
   ],
   "connections": [
-    [ "esp:23", "mA:DIN", "green", [] ], [ "esp:18", "mA:CLK", "yellow", [] ], [ "esp:5", "mA:CS", "orange", [] ],
-    [ "mA:DOUT", "mB:DIN", "green", [] ], [ "esp:18", "mB:CLK", "yellow", [] ], [ "esp:5", "mB:CS", "orange", [] ],
-    [ "esp:5V", "mA:VCC", "red", [] ], [ "esp:GND.1", "mA:GND", "black", [] ],
-    [ "esp:5V", "mB:VCC", "red", [] ], [ "esp:GND.1", "mB:GND", "black", [] ],
+    [ "esp:23", "mAi:DIN", "green", [] ], [ "esp:18", "mAi:CLK", "yellow", [] ], [ "esp:5", "mAi:CS", "orange", [] ],
+    [ "mAi:DOUT", "mAs:DIN", "green", [] ], [ "esp:18", "mAs:CLK", "yellow", [] ], [ "esp:5", "mAs:CS", "orange", [] ],
+    [ "mAs:DOUT", "mBi:DIN", "green", [] ], [ "esp:18", "mBi:CLK", "yellow", [] ], [ "esp:5", "mBi:CS", "orange", [] ],
+    [ "mBi:DOUT", "mBs:DIN", "green", [] ], [ "esp:18", "mBs:CLK", "yellow", [] ], [ "esp:5", "mBs:CS", "orange", [] ],
+    [ "esp:5V", "mAi:VCC", "red", [] ], [ "esp:GND.1", "mAi:GND", "black", [] ],
+    [ "esp:5V", "mAs:VCC", "red", [] ], [ "esp:GND.1", "mAs:GND", "black", [] ],
+    [ "esp:5V", "mBi:VCC", "red", [] ], [ "esp:GND.1", "mBi:GND", "black", [] ],
+    [ "esp:5V", "mBs:VCC", "red", [] ], [ "esp:GND.1", "mBs:GND", "black", [] ],
     [ "esp:32", "bAu:1.l", "blue", [] ], [ "bAu:2.l", "esp:GND.2", "black", [] ],
     [ "esp:33", "bAd:1.l", "blue", [] ], [ "bAd:2.l", "esp:GND.2", "black", [] ],
     [ "esp:25", "bBu:1.l", "blue", [] ], [ "bBu:2.l", "esp:GND.2", "black", [] ],
