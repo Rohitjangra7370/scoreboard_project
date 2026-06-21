@@ -167,6 +167,17 @@ static void test_new_sports() {
   CHECK_EQ(s.gamesA, 1);
 }
 
+static void test_match_over_bo3() {
+  ScoreState s; History h; state_reset(&s); history_clear(&h);
+  CHECK(!match_over(&s));                 // 0-0 not over
+  s.gamesA = 1; CHECK(!match_over(&s));   // 1 game not enough
+  s.gamesA = MATCH_TARGET;                // reach target
+  CHECK(match_over(&s));                  // A took the match
+  state_reset(&s);
+  s.gamesB = MATCH_TARGET;
+  CHECK(match_over(&s));                  // B side too
+}
+
 int main() {
   test_free_count();
   test_table_tennis();
@@ -176,6 +187,7 @@ int main() {
   test_reset();
   test_menu();
   test_new_sports();
+  test_match_over_bo3();
   if (g_failures == 0) printf("ALL TESTS PASSED\n");
   return g_failures ? 1 : 0;
 }

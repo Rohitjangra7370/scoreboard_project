@@ -7,6 +7,7 @@ enum Game { TABLE_TENNIS, TENNIS, BADMINTON, FREE_COUNT,
 enum Mode { PLAYING, MENU, REACTION };
 
 #define UNDO_DEPTH 20
+#define MATCH_TARGET 2   // Best of 3: first to 2 games wins the match
 
 struct ScoreState {
   int scoreA, scoreB;     // raw points (TT / badminton / free count)
@@ -44,3 +45,4 @@ void format_score(const ScoreState* s, Game g, bool playerA, char* out, size_t n
 const char* game_name(Game g);
 int         menu_advance(int cursor);  // (cursor + 1) % NUM_MENU
 const char* menu_name(int idx);        // game name, or "Reaction" for REACTION_ITEM
+bool match_over(const ScoreState* s);  // true once a side reaches MATCH_TARGET games

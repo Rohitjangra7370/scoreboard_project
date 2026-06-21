@@ -99,6 +99,10 @@ void format_score(const ScoreState* s, Game g, bool playerA, char* out, size_t n
   GAMES[g].format(s, playerA, out, n);
 }
 
+bool match_over(const ScoreState* s) {
+  return s->gamesA >= MATCH_TARGET || s->gamesB >= MATCH_TARGET;
+}
+
 const char* game_name(Game g) { return GAMES[g].name; }
 
 int menu_advance(int cursor) { return (cursor + 1) % NUM_MENU; }
