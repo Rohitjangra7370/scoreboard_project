@@ -18,7 +18,7 @@ assortment you likely already have or buy once.
 | Part | Qty | Approx. unit | Line total | Where to buy (US) |
 |------|-----|--------------|-----------|--------------|
 | ESP32-WROOM-32 dev board | 1 | $8 | $8 | [Amazon – HiLetgo/ESP-WROOM-32](https://www.amazon.com/ESP-WROOM-32-Development-Microcontroller-Integrated-Compatible/dp/B08D5ZD528) |
-| MAX7219 16×16 square matrix module (~70 mm, 4× 8×8 tiles per module) | 4 | $9–12 | ~$40 | [Amazon – MAX7219 16x16 matrix](https://www.amazon.com/s?k=MAX7219+16x16+dot+matrix+module) |
+| MAX7219 **16×16** square matrix module (~70 mm, 4× 8×8 tiles per module) | 4 | $13–18 | ~$55–70 | [Amazon – MusRock MAX7219 16×16 (B0FMQT8PHC)](https://www.amazon.com/MusRock-MAX7219-16x16-LED-Module/dp/B0FMQT8PHC) |
 | 5 mm LED — green (Player A round indicators) | 3 | *(kit)* | ~$0.50 | [Amazon (LED assortment kit)](https://www.amazon.com/s?k=5mm+LED+assortment+kit) |
 | 5 mm LED — red (Player B round indicators) | 3 | *(kit)* | ~$0.50 | [Amazon (LED assortment kit)](https://www.amazon.com/s?k=5mm+LED+assortment+kit) |
 | 220 Ω resistor | 6 | *(kit)* | ~$0.50 | [Amazon (resistor kit)](https://www.amazon.com/s?k=resistor+assortment+kit) |
@@ -31,8 +31,15 @@ assortment you likely already have or buy once.
 | Hook-up wire, headers, protoboard | — | — | ~$8 | [Amazon (kit, reusable)](https://www.amazon.com/s?k=22+awg+hookup+wire+protoboard+kit) |
 | 3D-print filament (PLA/PETG) | ~200 g | — | ~$5 | [Amazon](https://www.amazon.com/s?k=PLA+filament+1.75mm) · MatterHackers |
 | M3 screws (+ optional inserts) | 4 | — | ~$1 | [Amazon (kit)](https://www.amazon.com/s?k=M3+screw+assortment+kit) |
-| **Core electronics only** | | | **≈ $64** | |
-| **Full build (incl. wire/print/extras)** | | | **≈ $78–90** | |
+| **Core electronics only** | | | **≈ $80–95** | |
+| **Full build (incl. wire/print/extras)** | | | **≈ $95–115** | |
+
+> **The 4 displays are the biggest cost** (~$55–70). Prices on the 16×16
+> square modules vary a lot by seller — verify the current Amazon price before
+> ordering, and confirm the listing shows **four 8×8 MAX7219 chips per module**
+> with a **DIN/CS/CLK input + DOUT output** for chaining (see the matrix note
+> below). Do **not** buy "MAX7219 4-in-1 / 8×32" (those are horizontal strips,
+> not squares) or any "16×16" module that is RGB/WS2812 or 74HC595-driven.
 
 *Direct product links are US sellers (Amazon US / Adafruit). "Kit" rows use a
 search link since the exact pack you pick doesn't matter — any assortment works.*
@@ -52,7 +59,7 @@ role, and build cautions.
 | # | Component | Spec / part | Qty | Notes |
 |---|-----------|-------------|-----|-------|
 | 1 | Microcontroller | **ESP32-WROOM-32** dev board (30/38-pin) | 1 | The brain. Drives both dot-matrix panels over one SPI chain + reads buttons + drives indicator LEDs. Wi-Fi capable (used for the setup portal). |
-| 2 | Dot-matrix display | **MAX7219 16×16 square matrix module** (~70 mm, each module contains four 8×8 MAX7219 tiles) | 4 | 2 per player, stacked vertically: TOP square = initials (up to 2 letters), BOTTOM square = score (00–99 or tennis AD). Player A = left column, Player B = right column. All 4 modules daisy-chained on one SPI chain (16 tiles total). Powered from the 5 V rail. |
+| 2 | Dot-matrix display | **MAX7219 16×16 square matrix module** (~70 mm, each module contains four 8×8 MAX7219 tiles) — [Amazon: MusRock 16×16, B0FMQT8PHC](https://www.amazon.com/MusRock-MAX7219-16x16-LED-Module/dp/B0FMQT8PHC) | 4 | 2 per player, stacked vertically: TOP square = initials (up to 2 letters), BOTTOM square = score (00–99 or tennis AD). Player A = left column, Player B = right column. All 4 modules daisy-chained on one SPI chain (16 tiles total). Powered from the 5 V rail. **See the matrix sourcing note below before buying.** |
 | 3 | Round-indicator LED (green) | **5 mm LED, green** | 3 | Player A games-won tally (one LED per round). Series 220 Ω resistor each. |
 | 4 | Round-indicator LED (red) | **5 mm LED, red** | 3 | Player B games-won tally (one LED per round). Series 220 Ω resistor each. |
 | 5 | Current-limiting resistor | **220 Ω**, ¼ W | 6 | One in series per LED (GPIOs 26, 27, 14, 4, 16, 17 → resistor → LED → GND). |
@@ -94,12 +101,24 @@ These keep the build reliable; quantities are per unit.
 All parts are common and stocked in the USA (Amazon, Adafruit, SparkFun, Micro
 Center, DigiKey, Mouser). Read these before ordering:
 
-- **MAX7219 matrix modules:** use the **16×16 square matrix module** (~70 mm
-  per side, each module contains four 8×8 MAX7219 tiles). Four modules total —
-  2 per player, stacked (initials on top, score on bottom). All 4 modules are
-  daisy-chained on one SPI chain. Each module is powered from the 5 V rail;
-  the SPI data lines operate at 3.3 V and are accepted by the MAX7219 without
-  a level shifter in practice.
+- **MAX7219 matrix modules — buy 4× the 16×16 SQUARE type.** Recommended US
+  part: **[MusRock MAX7219 16×16 LED Module (B0FMQT8PHC)](https://www.amazon.com/MusRock-MAX7219-16x16-LED-Module/dp/B0FMQT8PHC)**
+  — four cascaded 8×8 MAX7219 tiles, SPI, chainable. Each module ~70 mm,
+  ~$13–18. Two per player, stacked (initials on top, score on bottom); all 4
+  daisy-chained on one SPI chain. Powered from 5 V; the 3.3 V SPI data lines
+  are accepted by the MAX7219 without a level shifter in practice.
+  - **✅ Confirm each module has:** four MAX7219 chips (one per 8×8 quadrant);
+    a 5-pin input (VCC, GND, **DIN, CS, CLK**) **and** a **DOUT** chaining output;
+    5 V, red LEDs, ~65–70 mm square.
+  - **❌ Do NOT buy:** "MAX7219 **4-in-1 / 8×32**" (those are 128×32 horizontal
+    strips, not squares); "16×16 RGB / WS2812" (wrong driver); any "16×16"
+    using a single controller or **74HC595** (won't drive with this firmware).
+  - **Fallback if 16×16 squares are out of stock:** build each square from
+    **four single 8×8 MAX7219 modules** (16 total) wired 2×2 — same firmware,
+    more soldering. US 4-pack:
+    **[ALAMSCN 8×8 MAX7219, Pack of 4 (B08SQT9GGB)](https://www.amazon.com/ALAMSCN-MAX7219-Display-Raspberry-Microcontroller/dp/B08SQT9GGB)**
+    (buy 4 packs = 16 modules), or
+    **[HiLetgo 3-pack 8×8 (B07W6KZR5D)](https://www.amazon.com/HiLetgo-MAX7219-Matrix-Display-Control/dp/B07W6KZR5D)**.
 - **Libraries:** firmware uses **Adafruit GFX Library** (install via Arduino
   Library Manager). **Max72xxPanel** by Mark Ruys (BSD) is bundled in the
   project (`firmware/Max72xxPanel.*`) — no separate install. MD_Parola /
