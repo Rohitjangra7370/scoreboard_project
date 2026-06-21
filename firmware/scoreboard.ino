@@ -1,7 +1,8 @@
 /*
  * Smart Scoreboard — LED-array build
  * ----------------------------------------------------------------------------
- *  - 2x MAX7219 8x32 dot-matrix (Player A / B): initial + score
+ *  - 4x MAX7219 16x16 square matrices, stacked per player:
+ *        initials on top, score below (A left column, B right column)
  *  - 6x discrete LEDs: 3 green (A rounds) + 3 red (B rounds), Best-of-3
  *  - 4 buttons: A-up/A-down, B-up/B-down (up=+point, down=undo)
  *  - ESP32 SoftAP captive portal: pick game + enter names
@@ -106,7 +107,7 @@ void setup() {
 
 void loop() {
   web_tick();
-  display_tick();                 // drives MD_Parola rendering — must run every loop
+  display_tick();                 // display refresh hook (no-op for Max72xxPanel)
   indicators_tick(millis());
 
   BtnEvent ev = input_poll();
