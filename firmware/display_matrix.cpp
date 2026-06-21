@@ -2,7 +2,7 @@
 #include <string.h>
 #include <SPI.h>
 #include <Adafruit_GFX.h>
-#include <Max72xxPanel.h>
+#include "Max72xxPanel.h"   // vendored (BSD, Mark Ruys) — not in Arduino registry
 
 // All four 16x16 modules (16x MAX7219 8x8 tiles) hang off ONE SPI chain:
 //   ESP32 hardware VSPI -> SCK=GPIO18, MOSI(DIN)=GPIO23, CS=GPIO5.
