@@ -63,10 +63,14 @@ MAT_B_X = A4_W - 78;          // right column centre (window 185..253) = 219
 INIT_Y  = 166;                // top window  132..200
 SCORE_Y = 88;                 // bottom window 54..122
 
-// ---- 5 mm status LED holes -------------------------------------------------
-LED5_D       = 5.2;    // bore for 5 mm LED body
-LED5_SPACING = 10;
-LED5_Y       = 44;
+// ---- 5 mm status LED holes — central 2×3 tally array -----------------------
+// 6 LEDs grouped in the gap BETWEEN the two matrix columns (like the original
+// sketch): left column = 3 green (Player A), right column = 3 red (Player B).
+LED5_D     = 5.2;          // bore for 5 mm LED body
+LED_CX     = A4_W / 2;     // centre line between the matrix columns (148.5)
+LED_COL_DX = 9;            // green (A) column left of centre, red (B) right
+LED_CY     = 127;          // vertical centre of the tally block
+LED_ROW_DY = 24;           // spacing between the 3 rows
 
 // ---- Push-button holes -----------------------------------------------------
 BTN_D        = 12.2;   // bore for 12 mm panel momentary button
@@ -147,10 +151,15 @@ module mat_frame(cx, cy) {
             }
 }
 
-module led_row(cx) {
-    for (i = [-1, 0, 1])
-        translate([cx + i * LED5_SPACING, LED5_Y, FACE])
+// 6-LED tally as a 2×3 array centred between the matrix columns:
+// left column = 3 green (A), right column = 3 red (B).
+module led_tally() {
+    for (j = [-1, 0, 1]) {
+        translate([LED_CX - LED_COL_DX, LED_CY + j * LED_ROW_DY, FACE])   // A (green)
             hole_chamfered(LED5_D, FACE, FACE);
+        translate([LED_CX + LED_COL_DX, LED_CY + j * LED_ROW_DY, FACE])   // B (red)
+            hole_chamfered(LED5_D, FACE, FACE);
+    }
 }
 module btn_pair(cx) {
     for (i = [-1, 1])
@@ -221,8 +230,8 @@ module faceplate() {
         // 4 square matrix windows
         mat_window(MAT_A_X, INIT_Y);   mat_window(MAT_A_X, SCORE_Y);
         mat_window(MAT_B_X, INIT_Y);   mat_window(MAT_B_X, SCORE_Y);
-        // status LEDs + push buttons (chamfered entries)
-        led_row(MAT_A_X);  led_row(MAT_B_X);
+        // 6-LED central tally + 4 push buttons (chamfered entries)
+        led_tally();
         btn_pair(MAT_A_X); btn_pair(MAT_B_X);
         // USB-C slot (matches tray)
         translate([A4_W - WALL - 1, A4_H / 2 - USB_W / 2, -1])
