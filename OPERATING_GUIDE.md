@@ -74,8 +74,8 @@ Each player has **two buttons**:
   - Player B round wins → red LEDs (GPIOs 4 / 16 / 17, left to right).
 - When a player wins their **2nd round** (match over), the **3rd LED on their
   side blinks** to signal the match is complete.
-- To start a new match, use the setup page (reconnect to `Scoreboard-XXXX`) and
-  tap Apply, or press either DOWN button to undo back through the match.
+- To start a new match, use the setup page (reconnect to `Scoreboard-XXXX`),
+  pick a game and tap Apply — this resets scores and round wins to zero.
 
 ---
 

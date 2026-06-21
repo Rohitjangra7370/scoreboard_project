@@ -64,13 +64,13 @@ Firmware uses INPUT_PULLUP; no external resistor needed.
 | Function | ESP32 GPIO | Notes |
 |----------|-----------|-------|
 | Button A-up (Player A +1 point) | GPIO 32 | INPUT_PULLUP, other leg → GND |
-| Button A-down (Player A undo) | GPIO 33 | INPUT_PULLUP, other leg → GND |
+| Button A-down (Player A -1 point) | GPIO 33 | INPUT_PULLUP, other leg → GND |
 | Button B-up (Player B +1 point) | GPIO 25 | INPUT_PULLUP, other leg → GND |
-| Button B-down (Player B undo) | GPIO 13 | INPUT_PULLUP, other leg → GND |
+| Button B-down (Player B -1 point) | GPIO 13 | INPUT_PULLUP, other leg → GND |
 | SPDT slide switch | — | master power, on the TP4056 OUT+ rail (not a GPIO) — see §4 |
 
 **Controls** (firmware — full details in `OPERATING_GUIDE.md`):
-UP button = +1 point. DOWN button = undo the last point.
+UP button = +1 point. DOWN button = -1 point to that player only.
 
 ---
 

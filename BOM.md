@@ -63,7 +63,7 @@ role, and build cautions.
 | 3 | Round-indicator LED (green) | **5 mm LED, green** | 3 | Player A games-won tally (one LED per round). Series 220 Ω resistor each. |
 | 4 | Round-indicator LED (red) | **5 mm LED, red** | 3 | Player B games-won tally (one LED per round). Series 220 Ω resistor each. |
 | 5 | Current-limiting resistor | **220 Ω**, ¼ W | 6 | One in series per LED (GPIOs 26, 27, 14, 4, 16, 17 → resistor → LED → GND). |
-| 6 | Buttons | **Momentary push button** (normally-open) | 4 | Two per player: UP (+1 point) and DOWN (undo). |
+| 6 | Buttons | **Momentary push button** (normally-open) | 4 | Two per player: UP (+1 point) and DOWN (-1 point, own player only). |
 | 7 | Power switch | **SPDT slide switch** (heavy-duty) | 1 | Master on/off. Wire on the TP4056 **OUT+** rail (see wiring §4). |
 | 8 | Battery | **3.7 V Li-ion / LiPo**, ~1200–2000 mAh | 1 | Portable power. Single cell. |
 | 9 | Charge controller | **TP4056, USB-C** charging module (with protection) | 1 | Safe USB-C LiPo charging + over-discharge protection. |

@@ -11,7 +11,7 @@ names are set from a phone over Wi-Fi (captive portal — no app required).
 - **ESP32-WROOM-32** — Wi-Fi SoftAP + game logic
 - **4× MAX7219 16×16 square matrix module** (~70 mm, daisy-chained on one SPI chain) — 2 per player stacked: top = initials, bottom = score
 - **6× 5 mm LED** (3 green / 3 red) + 220 Ω resistors — round-tally indicators
-- **4× momentary push button** — UP (+1) and DOWN (undo) per player
+- **4× momentary push button** — UP (+1) and DOWN (-1 point, own player only) per player
 - **Power chain:** 3.7 V LiPo → TP4056 USB-C charger → MT3608 5 V boost → SPDT master switch
 
 ## Firmware features
@@ -19,7 +19,7 @@ names are set from a phone over Wi-Fi (captive portal — no app required).
 - Best-of-3 match format; round LEDs light per win; 3rd LED blinks on match over
 - 8 game modes: Table Tennis, Badminton, Tennis, Free Count, Pickleball,
   Volleyball, Basketball 21, Cornhole
-- Full undo (DOWN button, works across round boundaries)
+- Per-player point correction (DOWN button removes one point from that player only)
 - Non-volatile score storage (NVS) — survives power-off
 - Wi-Fi SoftAP captive portal for game selection and player names
 
