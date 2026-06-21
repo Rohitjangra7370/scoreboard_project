@@ -1,21 +1,27 @@
 # Smart A4 Scoreboard — Operating Guide
 
-A portable, battery-powered, two-player digital scoreboard. Each player has a
-dedicated MAX7219 dot-matrix panel showing their initials and live score; six
-indicator LEDs (3 green, 3 red) track games won per player. Setup is done from
-your phone over Wi-Fi — no app required.
+A portable, battery-powered, two-player digital scoreboard. Each player has two
+dedicated MAX7219 16×16 square matrix modules — the top square shows their
+initials (up to 2 letters) and the bottom square shows their live score (00–99
+or tennis AD); six indicator LEDs (3 green, 3 red) track games won per player.
+Setup is done from your phone over Wi-Fi — no app required.
 
 ---
 
 ## 1. At a glance
 
 ```
-[ A matrix: initials + score ]  [green LEDs]  ||  [red LEDs]  [B matrix: score + initials]
-   Player A                    rounds won (A)      rounds won (B)              Player B
-         A-up / A-down buttons                        B-up / B-down buttons
+┌─────────────────┬─────────────────┐
+│ A-initials (top)│ B-initials (top)│   ← 16×16 square modules (top row)
+├─────────────────┼─────────────────┤
+│ A-score (bottom)│ B-score (bottom)│   ← 16×16 square modules (bottom row)
+├─────────────────┼─────────────────┤
+│ ● ● ●  A↑ A↓   │  B↑ B↓  ● ● ●  │   ← green LEDs + buttons (A) | buttons + red LEDs (B)
+└─────────────────┴─────────────────┘
+      Player A column                       Player B column
 ```
 
-- **Player A = left panel + green LEDs**, **Player B = right panel + red LEDs**.
+- **Player A = left column (2 squares) + green LEDs**, **Player B = right column (2 squares) + red LEDs**.
 - Green LEDs (left side) light up for each round Player A wins; red LEDs (right
   side) light up for each round Player B wins.
 - Everything (scores, games won, player names, selected game) is saved
@@ -104,14 +110,18 @@ choice is remembered after power-off.
 
 ## 7. Flashing to hardware
 
-1. Arduino IDE → install the **ESP32** board package and the libraries:
-   *MD_MAX72xx*, *MD_Parola*.
+1. Arduino IDE → install the **ESP32** board package and the following libraries:
+   - **Adafruit GFX Library** — via Arduino Library Manager (search "Adafruit GFX").
+   - **Max72xxPanel** by Mark Ruys — download from
+     [github.com/markruys/arduino-Max72xxPanel](https://github.com/markruys/arduino-Max72xxPanel)
+     and install via Sketch → Include Library → Add .ZIP Library.
+   *(MD_Parola and MD_MAX72xx are no longer used.)*
 2. Keep `scoreboard.ino` and all `.h` / `.cpp` files together in the same
    sketch folder.
 3. Wire everything per `wiring/wiring_table.md`.
 4. Select **"ESP32 Dev Module"**, choose the COM port, and **Upload**.
-5. Print the case: open `enclosure/scoreboard_case.scad` in OpenSCAD, set
-   `PART="tray"` then `PART="faceplate"`, export each as STL, and print.
+5. Print the case: open `enclosure/scoreboard_case.scad` (Rev E) in OpenSCAD,
+   set `PART="tray"` then `PART="faceplate"`, export each as STL, and print.
 
 ---
 
@@ -119,8 +129,8 @@ choice is remembered after power-off.
 
 | Symptom | Check |
 |---------|-------|
-| Matrix panel stays blank | Confirm CLK (GPIO 18), DIN (GPIO 23), and CS (GPIO 5) wires match `wiring/wiring_table.md`. Check daisy-chain: Panel A DOUT → Panel B DIN. |
-| Wrong player on wrong panel | Check module order: modules 0–3 = Player A (left panel), 4–7 = Player B (right panel). |
+| Matrix panel stays blank | Confirm CLK (GPIO 18), DIN (GPIO 23), and CS (GPIO 5) wires match `wiring/wiring_table.md`. Check daisy-chain: mod 1 DOUT → mod 2 DIN → mod 3 DIN → mod 4 DIN. |
+| Wrong content on wrong square | Check module order: mod 1 = A-initials (top-left), mod 2 = A-score (bottom-left), mod 3 = B-initials (top-right), mod 4 = B-score (bottom-right). |
 | Buttons do nothing | Buttons wire to GPIO + GND with internal pull-ups. Check that the correct GPIO is used (A-up=32, A-down=33, B-up=25, B-down=13). |
 | Score reset itself on its own | That's a round win (e.g. table tennis at 11) — points reset to 0–0 and a round LED lights. |
 | Setup page doesn't open | Connect to `Scoreboard-XXXX` Wi-Fi, then manually navigate to `http://192.168.4.1`. |
@@ -129,5 +139,5 @@ choice is remembered after power-off.
 
 ---
 
-*Built for Swapna. Firmware by Rohit Jangra — ESP32, MAX7219 dot-matrix panels,
-6 round-indicator LEDs, all logic unit-tested.*
+*Built for Swapna. Firmware by Rohit Jangra — ESP32, 4× MAX7219 16×16 square
+matrix modules, 6 round-indicator LEDs, all logic unit-tested.*

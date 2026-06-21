@@ -1,33 +1,39 @@
 # Smart A4 Scoreboard — Wiring / Pin Connection Table
 
 **MCU:** ESP32-WROOM-32 Dev Board
-**SPI chain:** two MAX7219 8×32 panels daisy-chained — ESP32 drives both panels
-from a single SPI chain (CLK, DIN, CS shared; DOUT of panel A feeds DIN of
-panel B). Modules 0–3 = Player A, modules 4–7 = Player B.
+**SPI chain:** four MAX7219 16×16 square matrix modules daisy-chained on one
+SPI chain (CLK, DIN, CS shared). Each module contains four 8×8 MAX7219 tiles
+(16 tiles total). Assignment: modules 1–2 = Player A (left column, top=initials,
+bottom=score); modules 3–4 = Player B (right column, top=initials, bottom=score).
 
 ---
 
-## 1. MAX7219 Dot-Matrix Panels (2× 8×32, 4-in-1 FC16)
+## 1. MAX7219 Dot-Matrix Modules (4× 16×16 square, ~70 mm)
 
 | Signal | ESP32 GPIO | Notes |
 |--------|-----------|-------|
-| CLK (shared) | GPIO 18 | SPI clock → both panels |
-| DIN (DATA) | GPIO 23 | SPI data → Panel A DIN |
-| CS (shared) | GPIO 5 | Chip select → both panels |
-| Panel A DOUT | — | Wire to Panel B DIN (daisy-chain) |
-| Panel A VCC | 5 V (from MT3608) | |
-| Panel A GND | GND | |
-| Panel B VCC | 5 V (from MT3608) | |
-| Panel B GND | GND | |
+| CLK (shared) | GPIO 18 | Hardware SPI clock → all 4 modules in parallel |
+| DIN (MOSI) | GPIO 23 | SPI data → module 1 DIN |
+| CS (shared) | GPIO 5 | Chip select → all 4 modules in parallel |
+| Module 1 DOUT | — | Wire to module 2 DIN (daisy-chain) |
+| Module 2 DOUT | — | Wire to module 3 DIN (daisy-chain) |
+| Module 3 DOUT | — | Wire to module 4 DIN (daisy-chain) |
+| Module 1–4 VCC | 5 V (from MT3608) | Each module VCC → 5 V rail |
+| Module 1–4 GND | GND | Each module GND → GND |
 
 **Daisy-chain wiring:**
-- ESP32 GPIO 23 → Panel A DIN
-- Panel A DOUT → Panel B DIN
-- CLK (GPIO 18) and CS (GPIO 5) connect to both panels in parallel
-- Module order: modules 0–3 = Player A, modules 4–7 = Player B
+- ESP32 GPIO 23 → module 1 DIN
+- Module 1 DOUT → module 2 DIN
+- Module 2 DOUT → module 3 DIN
+- Module 3 DOUT → module 4 DIN
+- CLK (GPIO 18) and CS (GPIO 5) connect to all 4 modules in parallel
 
-Layout (left → right):
-`[A matrix]  [A LEDs]  ||  [B LEDs]  [B matrix]`
+**Layout (2×2 grid, front face):**
+```
+Top row:    [A-initials (mod 1)]  [B-initials (mod 3)]
+Bottom row: [A-score    (mod 2)]  [B-score    (mod 4)]
+            [A LEDs + buttons ]   [B LEDs + buttons  ]
+```
 
 ---
 
@@ -78,9 +84,9 @@ UP button = +1 point. DOWN button = undo the last point.
                                                ▼▼
                                           MT3608 boost ──► stable 5V rail
                                                │
-            ┌──────────────────────────────────┼───────────────────┐
-            ▼                                  ▼                    ▼
-        ESP32 5V/VIN                   Panel A VCC             Panel B VCC
+            ┌──────────────────────────────────┼─────────────────────────┐
+            ▼                     ▼            ▼            ▼            ▼
+        ESP32 5V/VIN        Mod 1 VCC    Mod 2 VCC    Mod 3 VCC    Mod 4 VCC
 ```
 
 - **Switch goes on TP4056 OUT+ (load side), NOT between the battery and the TP4056.**

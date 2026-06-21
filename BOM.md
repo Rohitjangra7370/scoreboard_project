@@ -18,7 +18,7 @@ assortment you likely already have or buy once.
 | Part | Qty | Approx. unit | Line total | Where to buy (US) |
 |------|-----|--------------|-----------|--------------|
 | ESP32-WROOM-32 dev board | 1 | $8 | $8 | [Amazon – HiLetgo/ESP-WROOM-32](https://www.amazon.com/ESP-WROOM-32-Development-Microcontroller-Integrated-Compatible/dp/B08D5ZD528) |
-| MAX7219 8×32 dot-matrix module (4-in-1, FC16) | 2 | $7 | $14 | [Amazon – MAX7219 FC16 4-in-1](https://www.amazon.com/s?k=MAX7219+8x32+dot+matrix+FC16) |
+| MAX7219 16×16 square matrix module (~70 mm, 4× 8×8 tiles per module) | 4 | $9–12 | ~$40 | [Amazon – MAX7219 16x16 matrix](https://www.amazon.com/s?k=MAX7219+16x16+dot+matrix+module) |
 | 5 mm LED — green (Player A round indicators) | 3 | *(kit)* | ~$0.50 | [Amazon (LED assortment kit)](https://www.amazon.com/s?k=5mm+LED+assortment+kit) |
 | 5 mm LED — red (Player B round indicators) | 3 | *(kit)* | ~$0.50 | [Amazon (LED assortment kit)](https://www.amazon.com/s?k=5mm+LED+assortment+kit) |
 | 220 Ω resistor | 6 | *(kit)* | ~$0.50 | [Amazon (resistor kit)](https://www.amazon.com/s?k=resistor+assortment+kit) |
@@ -31,8 +31,8 @@ assortment you likely already have or buy once.
 | Hook-up wire, headers, protoboard | — | — | ~$8 | [Amazon (kit, reusable)](https://www.amazon.com/s?k=22+awg+hookup+wire+protoboard+kit) |
 | 3D-print filament (PLA/PETG) | ~200 g | — | ~$5 | [Amazon](https://www.amazon.com/s?k=PLA+filament+1.75mm) · MatterHackers |
 | M3 screws (+ optional inserts) | 4 | — | ~$1 | [Amazon (kit)](https://www.amazon.com/s?k=M3+screw+assortment+kit) |
-| **Core electronics only** | | | **≈ $38** | |
-| **Full build (incl. wire/print/extras)** | | | **≈ $52–62** | |
+| **Core electronics only** | | | **≈ $64** | |
+| **Full build (incl. wire/print/extras)** | | | **≈ $78–90** | |
 
 *Direct product links are US sellers (Amazon US / Adafruit). "Kit" rows use a
 search link since the exact pack you pick doesn't matter — any assortment works.*
@@ -52,7 +52,7 @@ role, and build cautions.
 | # | Component | Spec / part | Qty | Notes |
 |---|-----------|-------------|-----|-------|
 | 1 | Microcontroller | **ESP32-WROOM-32** dev board (30/38-pin) | 1 | The brain. Drives both dot-matrix panels over one SPI chain + reads buttons + drives indicator LEDs. Wi-Fi capable (used for the setup portal). |
-| 2 | Dot-matrix display | **MAX7219 8×32 LED dot-matrix module** (4-in-1, FC16 generic) | 2 | One per player — shows that player's initials + live score. Panels are daisy-chained on one SPI chain (8 modules total). Powered from the 5 V rail. |
+| 2 | Dot-matrix display | **MAX7219 16×16 square matrix module** (~70 mm, each module contains four 8×8 MAX7219 tiles) | 4 | 2 per player, stacked vertically: TOP square = initials (up to 2 letters), BOTTOM square = score (00–99 or tennis AD). Player A = left column, Player B = right column. All 4 modules daisy-chained on one SPI chain (16 tiles total). Powered from the 5 V rail. |
 | 3 | Round-indicator LED (green) | **5 mm LED, green** | 3 | Player A games-won tally (one LED per round). Series 220 Ω resistor each. |
 | 4 | Round-indicator LED (red) | **5 mm LED, red** | 3 | Player B games-won tally (one LED per round). Series 220 Ω resistor each. |
 | 5 | Current-limiting resistor | **220 Ω**, ¼ W | 6 | One in series per LED (GPIOs 26, 27, 14, 4, 16, 17 → resistor → LED → GND). |
@@ -82,7 +82,7 @@ These keep the build reliable; quantities are per unit.
 
 | # | Item | Spec | Qty | Notes |
 |---|------|------|-----|-------|
-| 16 | Case — tray + faceplate | 3D print from `enclosure/scoreboard_case.scad` (export `tray.stl` + `faceplate.stl`) | 1 set | A4 footprint, cutouts for both matrix panels, 6 round-indicator LEDs, 4 buttons, USB-C port. |
+| 16 | Case — tray + faceplate | 3D print from `enclosure/scoreboard_case.scad` Rev E (export `tray.stl` + `faceplate.stl`) | 1 set | A4 footprint. Faceplate has 4 square ~68 mm windows in a 2×2 grid (top row: A-initials left, B-initials right; bottom row: A-score left, B-score right), plus 6 LED holes and 4 button holes below each player's column. USB-C charge port cut-out on side. |
 | 17 | Filament | PLA or PETG (PETG if heat/impact matters) | ~150–250 g | For both parts. |
 | 18 | Screws | **M3 × ~8 mm** | 4 | Faceplate → tray, into the 4 screw bosses. |
 | 19 | Heat-set inserts *(optional)* | M3 brass | 4 | Cleaner threads than screwing straight into plastic. |
@@ -94,10 +94,16 @@ These keep the build reliable; quantities are per unit.
 All parts are common and stocked in the USA (Amazon, Adafruit, SparkFun, Micro
 Center, DigiKey, Mouser). Read these before ordering:
 
-- **MAX7219 matrix modules:** use the **FC16 4-in-1 generic module** (the wide
-  8×32 panel with a MAX7219 driver IC). These are widely available on Amazon.
-  Each module is powered from the 5 V rail; the SPI data lines operate at 3.3 V
-  and are accepted by the MAX7219 without a level shifter in practice.
+- **MAX7219 matrix modules:** use the **16×16 square matrix module** (~70 mm
+  per side, each module contains four 8×8 MAX7219 tiles). Four modules total —
+  2 per player, stacked (initials on top, score on bottom). All 4 modules are
+  daisy-chained on one SPI chain. Each module is powered from the 5 V rail;
+  the SPI data lines operate at 3.3 V and are accepted by the MAX7219 without
+  a level shifter in practice.
+- **Libraries:** firmware uses **Adafruit GFX Library** (install via Arduino
+  Library Manager) and **Max72xxPanel** by Mark Ruys (install from
+  github.com/markruys/arduino-Max72xxPanel). MD_Parola / MD_MAX72xx are no
+  longer used.
 - **LEDs:** any standard 5 mm through-hole green/red LED works. The 220 Ω
   resistor limits current to ~10–15 mA from a 3.3 V GPIO — safe and bright
   enough for indoor use.
