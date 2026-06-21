@@ -18,6 +18,14 @@ select,input{width:100%;padding:.6em;font-size:1em;border-radius:8px;border:1px 
 button{width:100%;padding:.8em;margin-top:1em;font-size:1.05em;border:0;border-radius:8px;background:#2d7;color:#012;font-weight:700}
 #reset{background:#444;color:#eee}.s{display:flex;gap:1em;margin-top:1.2em;font-size:2em;text-align:center}
 .s div{flex:1;background:#1c1c1c;border-radius:8px;padding:.4em}
+button{transition:transform .08s,opacity .2s}button:active{transform:scale(.97)}
+button:disabled{opacity:.55}
+#msg{margin:.8em 0;min-height:1.3em;padding:.55em .8em;border-radius:8px;font-weight:600;opacity:0;transition:opacity .15s}
+#msg.show{opacity:1}#msg.ok{background:#143d2b;color:#bdf5d6}#msg.err{background:#4a1f1f;color:#ffbcbc}
+@keyframes flash{0%{transform:scale(.92)}55%{transform:scale(1.05)}100%{transform:scale(1)}}
+#msg.flash{animation:flash .35s ease}
+.spin{display:inline-block;width:1em;height:1em;border:2px solid rgba(0,0,0,.35);border-top-color:#012;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:.45em}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style></head><body>
 <h1>Scoreboard setup</h1>
 <label>Game</label>
@@ -29,30 +37,32 @@ button{width:100%;padding:.8em;margin-top:1em;font-size:1.05em;border:0;border-r
 </select>
 <label>Player A name</label><input id=a maxlength=16 placeholder="Player A">
 <label>Player B name</label><input id=b maxlength=16 placeholder="Player B">
-<button onclick="apply()">Apply</button>
+<button id=applyBtn onclick="apply()">Apply</button>
 <button id=reset onclick="rst()">Reset match</button>
-<p id=msg style="margin:.8em 0;min-height:1.2em;color:#2d7"></p>
+<p id=msg></p>
 <div class=s><div id=sa>-</div><div id=sb>-</div></div>
 <p style="font-size:.8em;color:#888">Buttons not responding? Open
 <b>http://192.168.4.1</b> in a normal Chrome/Safari tab — not the auto sign-in
 popup (it blocks the page's scripts).</p>
 <script>
 function $(i){return document.getElementById(i)}
-function msg(t,err){var m=$('msg');m.textContent=t;m.style.color=err?'#f66':'#2d7'}
 var FAIL='Could not reach the board. Open http://192.168.4.1 in a normal browser tab.';
+function banner(t,cls){var m=$('msg');m.className='show flash '+cls;m.textContent=t;
+  setTimeout(function(){m.classList.remove('flash')},360);}
+function busy(btn,on,label){btn.disabled=on;btn.innerHTML=on?'<span class=spin></span>'+label:label;}
 function apply(){
-  msg('Applying...');
+  var b=$('applyBtn'); busy(b,true,'Applying...'); banner('Applying...','ok');
   fetch('/config?game='+$('game').value+'&a='+encodeURIComponent($('a').value)+'&b='+encodeURIComponent($('b').value))
     .then(function(r){return r.text()})
-    .then(function(){msg('Applied — board updated.')})
-    .catch(function(){msg(FAIL,1)});
+    .then(function(){busy(b,false,'Apply'); banner('Applied ✓  board updated','ok');})
+    .catch(function(){busy(b,false,'Apply'); banner(FAIL,'err');});
 }
 function rst(){
-  msg('Resetting...');
+  var b=$('reset'); busy(b,true,'Resetting...'); banner('Resetting...','ok');
   fetch('/reset')
     .then(function(r){return r.text()})
-    .then(function(){msg('Match reset.')})
-    .catch(function(){msg(FAIL,1)});
+    .then(function(){busy(b,false,'Reset match'); banner('Match reset ✓','ok');})
+    .catch(function(){busy(b,false,'Reset match'); banner(FAIL,'err');});
 }
 setInterval(function(){
   fetch('/state').then(function(r){return r.json()}).then(function(j){
