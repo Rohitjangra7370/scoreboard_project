@@ -107,6 +107,7 @@ void setup() {
 
 void loop() {
   web_tick();
+  display_tick();                 // drives MD_Parola rendering — must run every loop
   indicators_tick(millis());
 
   BtnEvent ev = input_poll();
