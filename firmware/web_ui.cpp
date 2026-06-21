@@ -41,9 +41,9 @@ button:disabled{opacity:.55}
 <button id=reset onclick="rst()">Reset match</button>
 <p id=msg></p>
 <div class=s><div id=sa>-</div><div id=sb>-</div></div>
-<p style="font-size:.8em;color:#888">Buttons not responding? Open
-<b>http://192.168.4.1</b> in a normal Chrome/Safari tab — not the auto sign-in
-popup (it blocks the page's scripts).</p>
+<p style="font-size:.8em;color:#888">Buttons not responding? <b>Turn off mobile
+data</b> (the phone may send requests over cellular), and open
+<b>http://192.168.4.1</b> in a normal Chrome/Safari tab (not the auto sign-in popup).</p>
 <script>
 function $(i){return document.getElementById(i)}
 var FAIL='Could not reach the board. Open http://192.168.4.1 in a normal browser tab.';
@@ -89,8 +89,16 @@ static void handleState()  {
   server.send(200, "application/json", buf);
 }
 
-// captive-portal: redirect every unknown host to the page
-static void handleCaptive() { server.sendHeader("Location", "http://192.168.4.1/"); server.send(302, "text/plain", ""); }
+// Connectivity-check replies. Phones probe these URLs to decide whether a Wi-Fi
+// network "has internet". If we DON'T answer success, the phone marks the AP as
+// dead and routes traffic (incl. the page's fetch() calls) over mobile data, so
+// requests to 192.168.4.1 never arrive — the page loads but buttons do nothing.
+// Replying "success" keeps the phone on Wi-Fi; the user opens 192.168.4.1.
+static void handle204()     { server.send(204, "text/plain", ""); }                 // Android generate_204
+static void handleApple()   { server.send(200, "text/html",
+                                "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>"); } // iOS
+static void handleNcsi()    { server.send(200, "text/plain", "Microsoft NCSI"); }    // Windows
+static void handleConnTest(){ server.send(200, "text/plain", "Microsoft Connect Test"); }
 
 void web_init(ConfigCb onConfig, ResetCb onReset, StateFn stateJson) {
   cbConfig = onConfig; cbReset = onReset; cbState = stateJson;
@@ -106,7 +114,14 @@ void web_init(ConfigCb onConfig, ResetCb onReset, StateFn stateJson) {
   server.on("/config", handleConfig);
   server.on("/reset", handleReset);
   server.on("/state", handleState);
-  server.onNotFound(handleCaptive);
+  // OS connectivity probes → "success" so the phone keeps the Wi-Fi route
+  server.on("/generate_204", handle204);
+  server.on("/gen_204", handle204);
+  server.on("/hotspot-detect.html", handleApple);
+  server.on("/library/test/success.html", handleApple);
+  server.on("/ncsi.txt", handleNcsi);
+  server.on("/connecttest.txt", handleConnTest);
+  server.onNotFound(handleRoot);   // any other path → just serve the setup page
   server.begin();
 }
 

@@ -33,14 +33,19 @@ Setup is done from your phone over Wi-Fi — no app required.
 1. **Power on** using the slide switch on the side.
 2. On your phone, open Wi-Fi settings and connect to the network named
    **`Scoreboard-XXXX`** (no password).
-3. A setup page should open automatically (captive portal). If it doesn't,
-   open a browser and visit **`http://192.168.4.1`**.
-4. On the setup page:
+3. **Turn off mobile data** for this step. The scoreboard's Wi-Fi has no
+   internet, so with mobile data on, the phone may send the page's requests
+   over cellular instead of to the board — the page loads but the buttons
+   appear dead. (The firmware also tells the phone the network is "OK" to keep
+   it on Wi-Fi, but disabling mobile data is the sure fix.)
+4. Open a browser and visit **`http://192.168.4.1`** (use a normal browser
+   tab, not the auto sign-in popup, which blocks the page's scripts).
+5. On the setup page:
    - Pick the **game** from the dropdown.
    - Type **Player A's name** and **Player B's name** (the board shows each
      player's initials).
-   - Tap **Apply**.
-5. The board immediately shows each player's initials and resets scores to 0.
+   - Tap **Apply** (you'll see a spinner, then a green "Applied" flash).
+6. The board immediately shows each player's initials and resets scores to 0.
 
 Your settings are remembered after power-off — you only need to redo setup if
 you want to change the game or player names.
