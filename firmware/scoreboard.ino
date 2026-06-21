@@ -34,14 +34,13 @@ static void initialsOf(const char* name, char* out2) {
 }
 
 static void renderBoard() {
-  char a[8], b[8], ia[3], ib[3], la[12], lb[12];
+  char a[8], b[8], ia[3], ib[3];
   format_score(&gState, gGame, true,  a, sizeof(a));
   format_score(&gState, gGame, false, b, sizeof(b));
   initialsOf(gNameA, ia);
   initialsOf(gNameB, ib);
-  snprintf(la, sizeof(la), "%s %s", ia, a);
-  snprintf(lb, sizeof(lb), "%s %s", ib, b);
-  display_show(la, lb);
+  // 4 square cells: A initials, A score, B initials, B score.
+  display_show(ia, a, ib, b);
   indicators_update(gState.gamesA, gState.gamesB);
 }
 

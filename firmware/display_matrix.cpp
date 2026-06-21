@@ -1,43 +1,80 @@
 #include "display_matrix.h"
-#include <MD_Parola.h>
-#include <MD_MAX72xx.h>
-#include <SPI.h>
 #include <string.h>
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Max72xxPanel.h>
 
-#define HARDWARE_TYPE MD_MAX72XX::FC16_HW
-#define MAX_DEVICES 8        // 2 panels x 4 modules
-#define MATRIX_CLK  18
-#define MATRIX_DATA 23
-#define MATRIX_CS   5
+// All four 16x16 modules (16x MAX7219 8x8 tiles) hang off ONE SPI chain:
+//   ESP32 hardware VSPI -> SCK=GPIO18, MOSI(DIN)=GPIO23, CS=GPIO5.
+#define MATRIX_CS 5
 
-static MD_Parola P = MD_Parola(HARDWARE_TYPE, MATRIX_DATA, MATRIX_CLK, MATRIX_CS, MAX_DEVICES);
+// 4 physical 16x16 modules = a 4x4 grid of 8x8 tiles -> 32x32 logical pixels.
+#define H_TILES 4
+#define V_TILES 4
+#define NUM_TILES (H_TILES * V_TILES)
 
-// MD_Parola keeps the POINTER we hand it, so the text must live as long as the
-// display is shown. Keep persistent per-zone buffers (caller's buffers may be
-// stack-local and go out of scope before the next displayAnimate()).
-static char zoneA[16] = "";
-static char zoneB[16] = "";
+static Max72xxPanel matrix = Max72xxPanel(MATRIX_CS, H_TILES, V_TILES);
+
+// ---------------------------------------------------------------------------
+// HARDWARE CALIBRATION (cheap MAX7219 panels vary by maker)
+// ---------------------------------------------------------------------------
+// The 16 8x8 tiles are chained in this physical order:
+//   tiles  0..3  -> A-initials module   (top-left  16x16 quadrant)
+//   tiles  4..7  -> A-score module      (bottom-left)
+//   tiles  8..11 -> B-initials module   (top-right)
+//   tiles 12..15 -> B-score module      (bottom-right)
+// Each module's 4 internal tiles are assumed chained TL,TR,BL,BR.
+// Map each chain tile to its (col,row) position in the 4x4 logical grid:
+static const uint8_t TILE_X[NUM_TILES] = { 0,1,0,1,  0,1,0,1,  2,3,2,3,  2,3,2,3 };
+static const uint8_t TILE_Y[NUM_TILES] = { 0,0,1,1,  2,2,3,3,  0,0,1,1,  2,2,3,3 };
+// If a quadrant shows up rotated/mirrored on real hardware, change this
+// (0..3). FC16-style modules commonly need 1; generic 16x16 often need 0.
+#define TILE_ROTATION 1
+
+// 16x16 quadrant top-left origins (logical pixels).
+struct Cell { int ox, oy; };
+static const Cell CELL_A_INIT  = {  0,  0 };
+static const Cell CELL_A_SCORE = {  0, 16 };
+static const Cell CELL_B_INIT  = { 16,  0 };
+static const Cell CELL_B_SCORE = { 16, 16 };
 
 void display_init() {
-  P.begin(2);                       // two zones
-  P.setZone(0, 0, 3);               // Player A: modules 0..3
-  P.setZone(1, 4, 7);               // Player B: modules 4..7
-  P.setIntensity(6);                // 0..15 brightness
-  P.displayClear();
+  for (uint8_t i = 0; i < NUM_TILES; i++) {
+    matrix.setPosition(i, TILE_X[i], TILE_Y[i]);
+    matrix.setRotation(i, TILE_ROTATION);
+  }
+  matrix.setIntensity(6);          // 0..15 brightness
+  matrix.fillScreen(LOW);
+  matrix.write();
 }
 
-void display_show(const char* a, const char* b) {
-  strncpy(zoneA, a, sizeof(zoneA) - 1); zoneA[sizeof(zoneA) - 1] = 0;
-  strncpy(zoneB, b, sizeof(zoneB) - 1); zoneB[sizeof(zoneB) - 1] = 0;
-  P.displayZoneText(0, zoneA, PA_CENTER, 0, 0, PA_PRINT, PA_NO_EFFECT);
-  P.displayZoneText(1, zoneB, PA_CENTER, 0, 0, PA_PRINT, PA_NO_EFFECT);
-  P.displayReset(0);
-  P.displayReset(1);
+// Draw up to 2 chars centered in a 16x16 cell. 1 char -> size 2 (12x16),
+// 2 chars -> size 1 (6x8 each) so both fit across 16 px.
+static void drawCell(const Cell& c, const char* s) {
+  char buf[3];
+  strncpy(buf, s, 2); buf[2] = 0;
+  int len = strlen(buf);
+  if (len == 0) return;
+  uint8_t size = (len <= 1) ? 2 : 1;
+  int charW = 6 * size, charH = 8 * size;
+  int x = c.ox + (16 - charW * len) / 2;
+  int y = c.oy + (16 - charH) / 2;
+  matrix.setTextSize(size);
+  matrix.setTextColor(HIGH, LOW);
+  matrix.setCursor(x, y);
+  matrix.print(buf);
 }
 
-// MD_Parola only renders/maintains the display when displayAnimate() runs.
-// Must be called continuously from loop(), not once — otherwise the matrix
-// stays blank.
+void display_show(const char* initA, const char* scoreA,
+                  const char* initB, const char* scoreB) {
+  matrix.fillScreen(LOW);
+  drawCell(CELL_A_INIT,  initA);
+  drawCell(CELL_A_SCORE, scoreA);
+  drawCell(CELL_B_INIT,  initB);
+  drawCell(CELL_B_SCORE, scoreB);
+  matrix.write();
+}
+
 void display_tick() {
-  P.displayAnimate();
+  // Max72xxPanel pushes the frame in display_show(); nothing to maintain here.
 }
