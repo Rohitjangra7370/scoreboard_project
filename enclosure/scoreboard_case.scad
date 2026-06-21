@@ -243,10 +243,47 @@ module faceplate() {
 }
 
 // ---------------------------------------------------------------------------
+// Product render — visualization only (NOT a printable part)
+// Shows the assembled front: white faceplate, the 4 matrices "lit" red with
+// initials + score, the 6-LED tally, and the buttons.
+// ---------------------------------------------------------------------------
+module disp_panel(cx, cy, txt) {
+    color([0.04, 0.04, 0.05])                          // dark matrix face (behind window)
+        translate([cx, cy, FACE + 1]) cube([MAT_WIN - 1, MAT_WIN - 1, 2], center = true);
+    color([1, 0.18, 0.12])                             // red "lit" characters, in front of it
+        translate([cx, cy, FACE - 1.6]) mirror([1, 0, 0]) linear_extrude(1.5)
+            text(txt, size = 40, halign = "center", valign = "center",
+                 font = "Liberation Sans:style=Bold");
+}
+module tally_dots() {
+    for (j = [-1, 0, 1]) {
+        color(j < 1 ? [0.25, 1, 0.35] : [0.12, 0.3, 0.15])     // 2 green lit (A won 2)
+            translate([LED_CX - LED_COL_DX, LED_CY + j * LED_ROW_DY, -1]) cylinder(d = LED5_D, h = 2);
+        color(j < 0 ? [1, 0.25, 0.25] : [0.3, 0.12, 0.12])     // 1 red lit (B won 1)
+            translate([LED_CX + LED_COL_DX, LED_CY + j * LED_ROW_DY, -1]) cylinder(d = LED5_D, h = 2);
+    }
+}
+module btn_caps() {
+    for (cx = [MAT_A_X, MAT_B_X]) for (i = [-1, 1])
+        color([0.13, 0.13, 0.14])
+            translate([cx + i * BTN_SPACING / 2, BTN_Y, -2]) cylinder(d = BTN_D, h = 3);
+}
+module product_render() {
+    color([0.92, 0.92, 0.95]) faceplate();
+    disp_panel(MAT_A_X, INIT_Y,  "AB");
+    disp_panel(MAT_A_X, SCORE_Y, "07");
+    disp_panel(MAT_B_X, INIT_Y,  "RB");
+    disp_panel(MAT_B_X, SCORE_Y, "12");
+    tally_dots();
+    btn_caps();
+}
+
+// ---------------------------------------------------------------------------
 // Output
 // ---------------------------------------------------------------------------
 if (PART == "tray")           tray();
 else if (PART == "faceplate") faceplate();
+else if (PART == "render")    product_render();
 else {  // exploded preview: faceplate flipped into assembled orientation above
         // the tray — outer face up, registration lip + matrix frames pointing
         // DOWN into the open tray (the way it actually drops on).
