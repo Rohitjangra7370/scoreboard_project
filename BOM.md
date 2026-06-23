@@ -22,7 +22,7 @@ assortment you likely already have or buy once.
 | 5 mm LED — green (Player A round indicators) | 3 | *(kit)* | ~$0.50 | [Amazon (LED assortment kit)](https://www.amazon.com/s?k=5mm+LED+assortment+kit) |
 | 5 mm LED — red (Player B round indicators) | 3 | *(kit)* | ~$0.50 | [Amazon (LED assortment kit)](https://www.amazon.com/s?k=5mm+LED+assortment+kit) |
 | 220 Ω resistor | 6 | *(kit)* | ~$0.50 | [Amazon (resistor kit)](https://www.amazon.com/s?k=resistor+assortment+kit) |
-| Momentary push button (6×6 mm tactile or panel-mount) | 4 | *(kit)* | ~$1 | [Amazon (tactile button kit)](https://www.amazon.com/s?k=momentary+push+button+assortment) |
+| Momentary push button (**12×12 mm** 4-pin tactile, w/ cap) | 4 | *(kit)* | ~$1 | [Amazon (12×12 tactile button + caps kit)](https://www.amazon.com/s?k=12x12+tactile+push+button+caps+kit) |
 | SPDT slide switch | 1 | $1 | $1 | [Amazon (multipack)](https://www.amazon.com/s?k=SPDT+slide+switch) |
 | USB power bank, **5 V / ≥3 A out**, 10000–20000 mAh | 1 | $15–25 | ~$20 | [Amazon (5V 3A USB power bank)](https://www.amazon.com/s?k=usb+power+bank+5v+3a+20000mah) |
 | USB-A → screw-terminal / pigtail (power tap) | 1 | $3 | $3 | [Amazon (USB power pigtail)](https://www.amazon.com/s?k=usb+to+screw+terminal+adapter) |
@@ -71,7 +71,7 @@ role, and build cautions.
 | 3 | Round-indicator LED (green) | **5 mm LED, green** | 3 | Player A games-won tally (one LED per round). Series 220 Ω resistor each. |
 | 4 | Round-indicator LED (red) | **5 mm LED, red** | 3 | Player B games-won tally (one LED per round). Series 220 Ω resistor each. |
 | 5 | Current-limiting resistor | **220 Ω**, ¼ W | 6 | One in series per LED (GPIOs 26, 27, 14, 4, 16, 17 → resistor → LED → GND). |
-| 6 | Buttons | **Momentary push button** (normally-open) | 4 | Two per player: UP (+1 point) and DOWN (-1 point, own player only). |
+| 6 | Buttons | **12×12 mm 4-pin tactile** momentary (normally-open), with cap | 4 | Two per player: UP (+1 point) and DOWN (-1 point, own player only). Matches the 12.2 mm faceplate bore; wire GPIO + diagonal pin → GND. |
 | 7 | Power switch | **SPDT slide switch** (heavy-duty) | 1 | Master on/off. Wire it in the 5 V feed from the power bank to the rail (see wiring §4). |
 | 8 | Power supply | **USB power bank, 5 V / ≥3 A output**, 10000–20000 mAh | 1 | Portable 5 V source for the 16 modules + ESP32. Integrated charging + protection. ~3 h runtime on 10000 mAh. **A single small LiPo + MT3608 cannot supply the ~1–3 A this build needs.** |
 | 9 | Power tap | **USB-A → screw-terminal / pigtail** | 1 | Takes 5 V/GND off the power bank to your protoboard rail. |
@@ -136,9 +136,11 @@ Center, DigiKey, Mouser). Read these before ordering:
 - **LEDs:** any standard 5 mm through-hole green/red LED works. The 220 Ω
   resistor limits current to ~10–15 mA from a 3.3 V GPIO — safe and bright
   enough for indoor use.
-- **Buttons:** any normally-open momentary push button (6×6 mm tactile or
-  panel-mount style) works. Firmware uses internal pull-ups; no external
-  resistor needed.
+- **Buttons:** **12×12 mm 4-pin tactile** (with cap) to match the 12.2 mm
+  faceplate bore. 4-pin = 2 joined pairs; wire one pin to the GPIO and a
+  **diagonal** pin to GND. Firmware uses internal pull-ups; no external resistor
+  needed. (Any normally-open momentary switch works electrically, but pick ~12 mm
+  so it fits the printed hole.)
 - **Logic levels:** the ESP32 GPIOs output 3.3 V; the MAX7219 DIN input
   typically accepts this reliably. If displays show noise/corruption, add a
   small pull-down (10 kΩ) on CS when de-asserted.
