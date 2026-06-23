@@ -103,11 +103,16 @@ choice is remembered after power-off.
 
 ## 6. Power & charging
 
-- **On / off:** the slide switch on the side is the master power switch.
-- **Charging:** plug a **USB-C** cable into the charge port (TP4056 module). It
-  charges the internal 3.7 V lithium battery safely; unplug when full.
-- **Brightness:** a boost converter (MT3608) keeps the matrix panels and LEDs at
-  full brightness even as the battery drains.
+- **On / off:** the slide switch on the side is the master power switch (it cuts
+  the 5 V feed from the power bank).
+- **Power:** the unit runs from an internal **USB power bank (5 V / ≥3 A)** — the
+  16 modules need more current than a single small battery can give. Expect
+  **~3 h** on a 10000 mAh bank at the default brightness.
+- **Charging:** charge the power bank through its own USB port (it has built-in
+  charging + protection). Use an "always-on" bank so it doesn't auto-shut-off.
+- **Brightness:** firmware holds the panels at a modest level (`setIntensity(6)`)
+  to keep current and runtime sensible; raise it in `display_matrix.cpp` if you
+  have power to spare.
 - **Memory:** scores, games won, player names, and the selected game are written
   to the ESP32's flash (NVS) on every change, so turning the device off — or a
   dead battery — never loses the score.
@@ -140,13 +145,15 @@ portable/outdoor unit.
    corner bosses with a soldering iron (the 4.0 mm bores are sized for them).
    *(No inserts? Set `USE_HEATSET = false` in the `.scad` and re-export — the
    bores become 2.6 mm for self-tapping M3 screws.)*
-2. **Boards:** mount the **ESP32** on the central 2×2 floor standoffs and the
-   **TP4056 / MT3608** on the lower standoffs (M2.5/M3 self-tap). Confirm your
-   exact board hole spacing against the `PCB_POSTS` positions in the `.scad`
+2. **Boards:** mount the **ESP32** on the central floor standoffs and tuck the
+   **USB power bank** into its pocket (M2.5/M3 self-tap for the ESP32). Confirm
+   your exact board hole spacing against the `PCB_POSTS` positions in the `.scad`
    first — adjust if needed before printing.
 3. **Matrices:** drop each **16×16 module** into its locating frame behind the
-   matching faceplate window (initials top, score bottom; A left, B right).
-   The module is captured by the window edge; the frame keeps it centred.
+   matching faceplate window — **4 modules per window (2×2)**, 4 windows total
+   (initials top, score bottom; A left, B right). Each module is captured by the
+   window edge; the frame keeps the block aligned. Wire the 16 in one daisy chain
+   in the order given in `wiring/wiring_table.md`.
 4. **LEDs & buttons:** push the 6 LEDs and 4 buttons into their chamfered
    faceplate holes; wire per `wiring/wiring_table.md`.
 5. **Close up:** seat the faceplate — its registration lip self-aligns into the

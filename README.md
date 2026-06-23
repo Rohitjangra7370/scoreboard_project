@@ -1,18 +1,23 @@
 # Smart A4 Scoreboard
 
-A portable, battery-powered two-player scoreboard built on an ESP32-WROOM-32.
-Each player has two MAX7219 16×16 square matrix modules (~70 mm each) arranged
-in a vertical stack — the top square shows initials and the bottom square shows
-the live score; six indicator LEDs track games won. Game selection and player
+A portable, large-format two-player scoreboard built on an ESP32-WROOM-32.
+Each player has two **32×32** display fields (each a 2×2 block of MAX7219 16×16
+modules) arranged in a vertical stack — the top field shows initials and the
+bottom field shows the live score; six indicator LEDs track games won. The big
+fields give **~12 cm digits, readable to ~18 m**. Game selection and player
 names are set from a phone over Wi-Fi (captive portal — no app required).
+
+> **Display size is set by `SCALE` in `firmware/display_matrix.cpp`.**
+> `SCALE 2` (current build) = 16 modules, 64×64 px, ~12 cm digits, ~18 m.
+> `SCALE 1` = 4 modules, 32×32 px, ~6 cm digits, ~12 m (smaller/cheaper/battery-light).
 
 ## Hardware
 
 - **ESP32-WROOM-32** — Wi-Fi SoftAP + game logic
-- **4× MAX7219 16×16 square matrix module** (~70 mm, daisy-chained on one SPI chain) — 2 per player stacked: top = initials, bottom = score
+- **16× MAX7219 16×16 square matrix module** (~70 mm, all daisy-chained on one SPI chain) — 4 per field, 2 fields per player stacked: top = initials, bottom = score
 - **6× 5 mm LED** (3 green / 3 red) + 220 Ω resistors — round-tally indicators
 - **4× momentary push button** — UP (+1) and DOWN (-1 point, own player only) per player
-- **Power chain:** 3.7 V LiPo → TP4056 USB-C charger → MT3608 5 V boost → SPDT master switch
+- **Power:** USB power bank (5 V / ≥3 A) → SPDT master switch → 5 V bus (16 modules draw ~1–3 A; a single LiPo + boost can't supply this — see `BOM.md`)
 
 ## Firmware features
 

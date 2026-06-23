@@ -1,39 +1,44 @@
 # Smart A4 Scoreboard — Wiring / Pin Connection Table
 
 **MCU:** ESP32-WROOM-32 Dev Board
-**SPI chain:** four MAX7219 16×16 square matrix modules daisy-chained on one
+**SPI chain:** sixteen MAX7219 16×16 square matrix modules daisy-chained on one
 SPI chain (CLK, DIN, CS shared). Each module contains four 8×8 MAX7219 tiles
-(16 tiles total). Assignment: modules 1–2 = Player A (left column, top=initials,
-bottom=score); modules 3–4 = Player B (right column, top=initials, bottom=score).
+(64 tiles total). SCALE=2 build: each of the 4 fields is a 2×2 block of modules
+(32×32 px). Chain order = A-initials (mods 1–4), A-score (mods 5–8),
+B-initials (mods 9–12), B-score (mods 13–16). Within each field, wire the 4
+modules row-major: top-left, top-right, bottom-left, bottom-right.
 
 ---
 
-## 1. MAX7219 Dot-Matrix Modules (4× 16×16 square, ~70 mm)
+## 1. MAX7219 Dot-Matrix Modules (16× 16×16 square, ~70 mm)
 
 | Signal | ESP32 GPIO | Notes |
 |--------|-----------|-------|
-| CLK (shared) | GPIO 18 | Hardware SPI clock → all 4 modules in parallel |
+| CLK (shared) | GPIO 18 | Hardware SPI clock → all 16 modules in parallel |
 | DIN (MOSI) | GPIO 23 | SPI data → module 1 DIN |
-| CS (shared) | GPIO 5 | Chip select → all 4 modules in parallel |
-| Module 1 DOUT | — | Wire to module 2 DIN (daisy-chain) |
-| Module 2 DOUT | — | Wire to module 3 DIN (daisy-chain) |
-| Module 3 DOUT | — | Wire to module 4 DIN (daisy-chain) |
-| Module 1–4 VCC | 5 V (from MT3608) | Each module VCC → 5 V rail |
-| Module 1–4 GND | GND | Each module GND → GND |
+| CS (shared) | GPIO 5 | Chip select → all 16 modules in parallel |
+| Module n DOUT | — | Wire to module n+1 DIN (daisy-chain, 1→16) |
+| Module 1–16 VCC | 5 V (from power bank) | Each module VCC → 5 V rail (thick wire / multiple feeds) |
+| Module 1–16 GND | GND | Each module GND → common GND |
 
-**Daisy-chain wiring:**
+**Daisy-chain wiring (one continuous chain of 16):**
 - ESP32 GPIO 23 → module 1 DIN
-- Module 1 DOUT → module 2 DIN
-- Module 2 DOUT → module 3 DIN
-- Module 3 DOUT → module 4 DIN
-- CLK (GPIO 18) and CS (GPIO 5) connect to all 4 modules in parallel
+- Module n DOUT → module n+1 DIN, for n = 1…15
+- CLK (GPIO 18) and CS (GPIO 5) connect to all 16 modules in parallel
+- **Chain order:** mods 1–4 = A-initials field, 5–8 = A-score, 9–12 = B-initials,
+  13–16 = B-score. Within each field wire row-major: TL → TR → BL → BR.
 
-**Layout (2×2 grid, front face):**
+> **Power wiring matters at 16 modules.** Don't feed all 16 from one thin daisy
+> chain of VCC/GND — voltage will sag at the far end. Run the 5 V and GND as a
+> bus (thicker wire) and tap each field's 4 modules from it. Put a 1000 µF cap on
+> the 5 V rail at each column.
+
+**Layout (each field = 2×2 modules, front face):**
 ```
-Top row:    [A-initials (mod 1)]   ●●   [B-initials (mod 3)]
-Bottom row: [A-score    (mod 2)]   ●●   [B-score    (mod 4)]
-                                   ●●
-            [ A↑ A↓ ]                    [ B↑ B↓ ]
+Top row:    [A-initials: mods 1-4]   ●●   [B-initials: mods 9-12 ]
+Bottom row: [A-score:    mods 5-8]   ●●   [B-score:    mods 13-16]
+                                     ●●
+            [ A↑ A↓ ]                      [ B↑ B↓ ]
 ```
 Centre column ●● = the 6 round-tally LEDs (2×3): left = 3 green (A), right =
 3 red (B). The 4 buttons sit below each player's matrix column.
@@ -70,7 +75,7 @@ Firmware uses INPUT_PULLUP; no external resistor needed.
 | Button A-down (Player A -1 point) | GPIO 33 | INPUT_PULLUP, other leg → GND |
 | Button B-up (Player B +1 point) | GPIO 25 | INPUT_PULLUP, other leg → GND |
 | Button B-down (Player B -1 point) | GPIO 13 | INPUT_PULLUP, other leg → GND |
-| SPDT slide switch | — | master power, on the TP4056 OUT+ rail (not a GPIO) — see §4 |
+| SPDT slide switch | — | master power, in the 5 V feed from the power-bank tap (not a GPIO) — see §4 |
 
 **Controls** (firmware — full details in `OPERATING_GUIDE.md`):
 UP button = +1 point. DOWN button = -1 point to that player only.
@@ -80,25 +85,31 @@ UP button = +1 point. DOWN button = -1 point to that player only.
 ## 4. Power Chain (no GPIO — hardware only)
 
 ```
-3.7V LiPo B+ ──► TP4056 B+        [USB-C charge in]
-3.7V LiPo B- ──► TP4056 B-
-                 │ OUT+ ──► SPDT slide switch ──┐   (switch on the LOAD side)
-                 │ OUT- ───────────────────────┐│
-                                               ▼▼
-                                          MT3608 boost ──► stable 5V rail
-                                               │
-            ┌──────────────────────────────────┼─────────────────────────┐
-            ▼                     ▼            ▼            ▼            ▼
-        ESP32 5V/VIN        Mod 1 VCC    Mod 2 VCC    Mod 3 VCC    Mod 4 VCC
+USB power bank (5V / ≥3A out)
+   │  USB-A → screw-terminal/pigtail tap
+   ▼
+  5V ──► SPDT slide switch ──┐   (switch in the 5V feed)
+  GND ───────────────────────┼──────────────────────────────────────┐
+                             ▼                                        ▼
+                       5V rail (bus, thick wire) ───────────────► common GND
+                             │
+   ┌───────────┬─────────────┼─────────────┬─────────────┐
+   ▼           ▼             ▼             ▼             ▼
+ESP32 5V/VIN  A-init 4 mods  A-score 4    B-init 4     B-score 4
+              (+1000µF)      (+1000µF)
 ```
 
-- **Switch goes on TP4056 OUT+ (load side), NOT between the battery and the TP4056.**
-  This keeps the LiPo permanently on the charger's protected B+/B- terminals, so the
-  device can still charge while switched off and the cell stays protected.
-- TP4056 = safe USB-C LiPo charging + protection.
-- MT3608 = boosts sagging 3.7V → steady 5V so the matrix panels never dim.
-- ESP32 onboard regulator supplies 3.3V to its own internal logic; the matrix
-  panels and LEDs run from the 5V rail.
+- **Use a USB power bank rated 5 V / ≥3 A.** 16 modules + ESP32 draw ~1–3 A on
+  typical content — a single LiPo + MT3608 cannot supply this. The bank gives 5 V
+  directly, so no boost converter is needed.
+- **Pick an "always-on"/passthrough bank** that won't auto-shut-off at low draw.
+- **Switch** goes in the 5 V feed between the tap and the rail (master on/off).
+- Run 5 V and GND as a **bus** (thicker wire); tap each field's 4 modules from it
+  to avoid voltage sag. One 1000 µF cap per column on the 5 V rail.
+- ESP32 onboard regulator supplies 3.3 V to its own logic; modules + LEDs run
+  from the 5 V rail.
+- *(SCALE=1 alt.)* For the smaller 4-module build, the old LiPo + TP4056 + MT3608
+  chain is fine — see the project history.
 
 ---
 

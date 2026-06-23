@@ -4,61 +4,102 @@
 #include <Adafruit_GFX.h>
 #include "Max72xxPanel.h"   // vendored (BSD, Mark Ruys) — not in Arduino registry
 
-// All four 16x16 modules (16x MAX7219 8x8 tiles) hang off ONE SPI chain:
+// All MAX7219 modules hang off ONE SPI chain:
 //   ESP32 hardware VSPI -> SCK=GPIO18, MOSI(DIN)=GPIO23, CS=GPIO5.
 #define MATRIX_CS 5
 
-// 4 physical 16x16 modules = a 4x4 grid of 8x8 tiles -> 32x32 logical pixels.
-#define H_TILES 4
-#define V_TILES 4
-#define NUM_TILES (H_TILES * V_TILES)
+// ---------------------------------------------------------------------------
+// DISPLAY SCALE
+// ---------------------------------------------------------------------------
+// SCALE = number of 16x16 modules along each side of ONE field.
+//   SCALE 1 -> field = 1x 16x16 module (16x16 px), 4 fields = 4 modules,  32x32 logical.
+//   SCALE 2 -> field = 2x2 16x16 modules (32x32 px), 4 fields = 16 modules, 64x64 logical.
+// Bigger SCALE = bigger digits = readable from further, but more modules,
+// more current, more cost, more weight. SCALE 2 ~= 12 cm digits, clear to ~18 m.
+#define SCALE 2
+
+// 16x16 module = 2x2 of the MAX7219 8x8 tiles.
+#define TILES_PER_MODULE_SIDE 2
+#define FIELD_TILES   (TILES_PER_MODULE_SIDE * SCALE)   // 8x8 tiles per field side
+#define H_TILES       (2 * FIELD_TILES)                 // 2 fields wide
+#define V_TILES       (2 * FIELD_TILES)                 // 2 fields tall
+#define NUM_TILES     (H_TILES * V_TILES)
+#define CELLPX        (16 * SCALE)                       // one field, in logical pixels
 
 static Max72xxPanel matrix = Max72xxPanel(MATRIX_CS, H_TILES, V_TILES);
 
 // ---------------------------------------------------------------------------
 // HARDWARE CALIBRATION (cheap MAX7219 panels vary by maker)
 // ---------------------------------------------------------------------------
-// The 16 8x8 tiles are chained in this physical order:
-//   tiles  0..3  -> A-initials module   (top-left  16x16 quadrant)
-//   tiles  4..7  -> A-score module      (bottom-left)
-//   tiles  8..11 -> B-initials module   (top-right)
-//   tiles 12..15 -> B-score module      (bottom-right)
-// Each module's 4 internal tiles are assumed chained TL,TR,BL,BR.
-// Map each chain tile to its (col,row) position in the 4x4 logical grid:
-static const uint8_t TILE_X[NUM_TILES] = { 0,1,0,1,  0,1,0,1,  2,3,2,3,  2,3,2,3 };
-static const uint8_t TILE_Y[NUM_TILES] = { 0,0,1,1,  2,2,3,3,  0,0,1,1,  2,2,3,3 };
-// If a quadrant shows up rotated/mirrored on real hardware, change this
+// The 8x8 tiles are daisy-chained from the ESP32 in this PHYSICAL order:
+//   1. Fields, in the order: A-initials, A-score, B-initials, B-score.
+//   2. Within a field, its SCALE x SCALE modules, row-major (TL, TR, BL, BR...).
+//   3. Within a module, its 4 tiles, in order TL, TR, BL, BR.
+// Wire the chain to match this order (DOUT -> DIN, module to module) and the
+// map below is computed for you — no hand-editing needed when SCALE changes.
+//
+// If a quadrant shows up rotated/mirrored on real hardware, change TILE_ROTATION
 // (0..3). FC16-style modules commonly need 1; generic 16x16 often need 0.
 #define TILE_ROTATION 1
 
-// 16x16 quadrant top-left origins (logical pixels).
+// Field top-left origins, in TILE units (each field is FIELD_TILES tiles per side).
+//   A-init  top-left      A-score  bottom-left
+//   B-init  top-right     B-score  bottom-right
+static const uint8_t FIELD_TX[4] = { 0,          0,          FIELD_TILES, FIELD_TILES };
+static const uint8_t FIELD_TY[4] = { 0,          FIELD_TILES, 0,          FIELD_TILES };
+
+// Computed per-chain-tile (x,y) position in the H_TILES x V_TILES logical grid.
+static uint8_t TILE_X[NUM_TILES];
+static uint8_t TILE_Y[NUM_TILES];
+
+static void buildTileMap() {
+  int idx = 0;
+  for (int f = 0; f < 4; f++) {                     // field
+    for (int m = 0; m < SCALE * SCALE; m++) {        // module within field (row-major)
+      int mrow = m / SCALE, mcol = m % SCALE;
+      int mbx = FIELD_TX[f] + mcol * TILES_PER_MODULE_SIDE;  // module base, tile units
+      int mby = FIELD_TY[f] + mrow * TILES_PER_MODULE_SIDE;
+      // tiles within module: TL, TR, BL, BR
+      static const int TDX[4] = { 0, 1, 0, 1 };
+      static const int TDY[4] = { 0, 0, 1, 1 };
+      for (int t = 0; t < 4; t++) {
+        TILE_X[idx] = mbx + TDX[t];
+        TILE_Y[idx] = mby + TDY[t];
+        idx++;
+      }
+    }
+  }
+}
+
+// 16x16-per-module quadrant origins scale up to CELLPX-sized field cells.
 struct Cell { int ox, oy; };
-static const Cell CELL_A_INIT  = {  0,  0 };
-static const Cell CELL_A_SCORE = {  0, 16 };
-static const Cell CELL_B_INIT  = { 16,  0 };
-static const Cell CELL_B_SCORE = { 16, 16 };
+static const Cell CELL_A_INIT  = {     0,      0 };
+static const Cell CELL_A_SCORE = {     0, CELLPX };
+static const Cell CELL_B_INIT  = { CELLPX,     0 };
+static const Cell CELL_B_SCORE = { CELLPX, CELLPX };
 
 void display_init() {
-  for (uint8_t i = 0; i < NUM_TILES; i++) {
+  buildTileMap();
+  for (uint16_t i = 0; i < NUM_TILES; i++) {
     matrix.setPosition(i, TILE_X[i], TILE_Y[i]);
     matrix.setRotation(i, TILE_ROTATION);
   }
-  matrix.setIntensity(6);          // 0..15 brightness
+  matrix.setIntensity(6);          // 0..15 brightness (keep modest: 16 modules draw real current)
   matrix.fillScreen(LOW);
   matrix.write();
 }
 
-// Draw up to 2 chars centered in a 16x16 cell. 1 char -> size 2 (12x16),
-// 2 chars -> size 1 (6x8 each) so both fit across 16 px.
+// Draw up to 2 chars centered in a CELLPX x CELLPX field.
+// 1 char -> size 2*SCALE (tall, fills the cell), 2 chars -> size SCALE (both fit across).
 static void drawCell(const Cell& c, const char* s) {
   char buf[3];
   strncpy(buf, s, 2); buf[2] = 0;
   int len = strlen(buf);
   if (len == 0) return;
-  uint8_t size = (len <= 1) ? 2 : 1;
+  uint8_t size = (len <= 1) ? (2 * SCALE) : SCALE;
   int charW = 6 * size, charH = 8 * size;
-  int x = c.ox + (16 - charW * len) / 2;
-  int y = c.oy + (16 - charH) / 2;
+  int x = c.ox + (CELLPX - charW * len) / 2;
+  int y = c.oy + (CELLPX - charH) / 2;
   matrix.setTextSize(size);
   matrix.setTextColor(HIGH, LOW);
   matrix.setCursor(x, y);

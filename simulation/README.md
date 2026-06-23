@@ -38,6 +38,12 @@ No physical hardware needed. Two ways to run.
 - Stop & restart the sim → game, names, and scores reload from NVS (persistence).
 
 ## Important caveats
+- **Run the sim with `SCALE 1`.** The hardware build ships `SCALE 2` (16 modules,
+  64×64) in `display_matrix.cpp`, but the `diagram.json` here has the 4-module
+  (32×32) layout — Wokwi can't realistically render 64 chained tiles. Set
+  `#define SCALE 1` in `display_matrix.cpp` before simulating; the sim only
+  verifies scoring/LED/button **logic**, which is identical at either scale. Set
+  it back to `2` for the real build.
 - **Wokwi can't fully model the 16×16 squares.** Wokwi's `wokwi-max7219-matrix`
   is a horizontal 8×N strip, so each 16×16 module is approximated by a `chain=4`
   strip and the `Max72xxPanel` 2-D tile mapping won't render as true squares in
