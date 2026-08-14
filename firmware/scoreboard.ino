@@ -4,7 +4,7 @@
  *  - 16x MAX7219 16x16 square matrices (4 per field, SCALE=2), stacked per player:
  *        initials on top, score below (A left column, B right column)
  *        -> 64x64 logical px, ~12 cm digits, readable to ~18 m
- *  - 6x discrete LEDs: 3 green (A rounds) + 3 red (B rounds), Best-of-3
+ *  - 6x discrete LEDs: 3 green (A rounds) + 3 red (B rounds), Best-of-5
  *  - 4 buttons: A-up/A-down, B-up/B-down (up=+point, down=-1 point, own player)
  *  - ESP32 SoftAP captive portal: pick game + enter names
  *  - Game/names/scores persist in NVS.

@@ -23,7 +23,7 @@ enclosure/   scoreboard_case.scad  parametric 3D-printable case (~300mm, 2 parts
 - **16× MAX7219 16×16 square matrix modules** (~70 mm each) on a single daisy-chained SPI bus — **4 per field (2×2 = 32×32 px), 2 fields per player** stacked: top field = initials (up to 2 letters), bottom field = score (00–99 or tennis AD). Player A = left column, Player B = right column. Gives **~12 cm digits, readable to ~18 m** (SCALE=2). Display size is one line in firmware (`SCALE` in `display_matrix.cpp`): SCALE 1 = 4 modules/~6 cm/~12 m, SCALE 2 = 16 modules/~12 cm/~18 m.
 - 6x round-indicator LEDs (3 green for Player A, 3 red for Player B) — light up as rounds are won.
 - 4x momentary buttons — UP (+1) and DOWN (-1 point, own player only) for each player.
-- **Best-of-3 match format:** first to win 2 rounds wins the match; the 3rd LED blinks on match over.
+- **Best-of-5 match format:** first to win 3 rounds wins the match — all three round LEDs on the winner's side end up lit, and the 3rd one blinks on match over.
 - **Wi-Fi SoftAP captive portal:** connect phone to `Scoreboard-XXXX`, pick game and enter player names — no app required.
 - **8 game modes:** Table Tennis, Tennis, Badminton, Free Count, Pickleball, Volleyball, Basketball 21, Cornhole.
 - **Non-volatile memory (NVS):** scores, round wins, player names, and selected game survive power-off / dead battery.

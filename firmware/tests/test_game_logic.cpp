@@ -190,7 +190,7 @@ static void test_new_sports() {
   CHECK_EQ(s.gamesA, 1);
 }
 
-static void test_match_over_bo3() {
+static void test_match_over_bo5() {
   ScoreState s; History h; state_reset(&s); history_clear(&h);
   CHECK(!match_over(&s));                 // 0-0 not over
   s.gamesA = 1; CHECK(!match_over(&s));   // 1 game not enough
@@ -210,7 +210,7 @@ int main() {
   test_reset();
   test_menu();
   test_new_sports();
-  test_match_over_bo3();
+  test_match_over_bo5();
   test_decrement_per_player();
   if (g_failures == 0) printf("ALL TESTS PASSED\n");
   return g_failures ? 1 : 0;

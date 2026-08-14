@@ -7,7 +7,7 @@ enum Game { TABLE_TENNIS, TENNIS, BADMINTON, FREE_COUNT,
 enum Mode { PLAYING, MENU, REACTION };
 
 #define UNDO_DEPTH 20
-#define MATCH_TARGET 2   // Best of 3: first to 2 games wins the match
+#define MATCH_TARGET 3   // Best of 5: first to 3 games wins the match (fills all 3 round LEDs)
 
 struct ScoreState {
   int scoreA, scoreB;     // raw points (TT / badminton / free count)

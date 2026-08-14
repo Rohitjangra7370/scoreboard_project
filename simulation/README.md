@@ -32,7 +32,7 @@ No physical hardware needed. Two ways to run.
 - **4 matrices**, stacked per player: top = initials, bottom = score.
   Left column = Player A, right column = Player B.
 - **6 LEDs:** each player's own LEDs (green = A, red = B) light up for the
-  rounds they've won (best-of-3, first to 2; the 3rd LED blinks at match over).
+  rounds they've won (best-of-5, first to 3; the 3rd LED blinks at match over).
 - **Buttons:** each player has UP and DOWN. **UP** = +1 point (runs the sport's
   rules). **DOWN** = remove one point from **that player only**.
 - Stop & restart the sim → game, names, and scores reload from NVS (persistence).

@@ -60,7 +60,8 @@ LED cathode → GND.
 | LED B round 3 (red — Player B) | GPIO 17 |
 
 > 3 green LEDs track Player A games won; 3 red LEDs track Player B games won.
-> The 3rd LED on the winning side blinks when the match is over (Best of 3).
+> The 3rd LED on the winning side blinks when the match is over (Best of 5 —
+> first to 3 rounds, so all three of that side's LEDs are lit).
 
 ---
 

@@ -31,6 +31,6 @@ void indicators_tick(uint32_t now) {
   if (now - lastBlink < 400) return;
   lastBlink = now;
   blinkOn = !blinkOn;
-  uint8_t pin = (winnerSide == 0) ? A_LEDS[2] : B_LEDS[2];  // spare 3rd LED
+  uint8_t pin = (winnerSide == 0) ? A_LEDS[2] : B_LEDS[2];  // 3rd LED = the match-winning round
   digitalWrite(pin, blinkOn ? HIGH : LOW);
 }

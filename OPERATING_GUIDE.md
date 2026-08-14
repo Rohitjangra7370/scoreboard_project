@@ -71,13 +71,13 @@ Each player has **two buttons**:
 
 ## 4. Match format and round indicators
 
-- Match is **Best of 3**: first player to win **2 rounds** wins the match.
+- Match is **Best of 5**: first player to win **3 rounds** wins the match.
 - A round ends when a player reaches the game's winning score (see §5).
 - Each round win lights the next LED on that player's side:
   - Player A round wins → green LEDs (GPIOs 26 / 27 / 14, left to right).
   - Player B round wins → red LEDs (GPIOs 4 / 16 / 17, left to right).
-- When a player wins their **2nd round** (match over), the **3rd LED on their
-  side blinks** to signal the match is complete.
+- When a player wins their **3rd round** (match over), all three of that side's
+  LEDs are lit and the **3rd LED blinks** to signal the match is complete.
 - To start a new match, use the setup page (reconnect to `Scoreboard-XXXX`),
   pick a game and tap Apply — this resets scores and round wins to zero.
 
@@ -172,7 +172,7 @@ portable/outdoor unit.
 | Score reset itself on its own | That's a round win (e.g. table tennis at 11) — points reset to 0–0 and a round LED lights. |
 | Setup page doesn't open | Connect to `Scoreboard-XXXX` Wi-Fi, then manually navigate to `http://192.168.4.1`. |
 | Settings lost after power-off | Scores save on every change via NVS. If this happens, the flash write may have failed — re-flash the firmware. |
-| 3rd LED blinking | Match is over — that player won the Best-of-3. Start a new match via the setup page. |
+| 3rd LED blinking | Match is over — that player won the Best-of-5. Start a new match via the setup page. |
 
 ---
 

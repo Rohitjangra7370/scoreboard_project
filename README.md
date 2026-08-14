@@ -21,7 +21,7 @@ names are set from a phone over Wi-Fi (captive portal — no app required).
 
 ## Firmware features
 
-- Best-of-3 match format; round LEDs light per win; 3rd LED blinks on match over
+- Best-of-5 match format (first to 3 rounds); round LEDs light per win; 3rd LED blinks on match over
 - 8 game modes: Table Tennis, Badminton, Tennis, Free Count, Pickleball,
   Volleyball, Basketball 21, Cornhole
 - Per-player point correction (DOWN button removes one point from that player only)
